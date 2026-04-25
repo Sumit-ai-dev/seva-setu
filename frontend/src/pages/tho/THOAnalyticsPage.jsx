@@ -22,9 +22,9 @@ const TargetIcon = () => (
   </svg>
 )
 
-const SANGLI_TALUKAS = [
-  'Miraj', 'Tasgaon', 'Walwa (Islampur)', 'Shirala', 'Palus', 
-  'Kadegaon', 'Khanapur (Vita)', 'Atpadi', 'Kavathe Mahankal', 'Jat'
+const BENGALURU_ZONES = [
+  'Yelahanka', 'Byatarayanapura', 'Yeshwanthpur', 'Malleshwaram', 'KR Puram', 
+  'Mahadevapura', 'Bommanahalli', 'Dasarahalli', 'Kengeri', 'RR Nagar'
 ]
 
 export default function THOAnalyticsPage() {
@@ -35,7 +35,7 @@ export default function THOAnalyticsPage() {
   const [triageRecords, setTriageRecords] = useState([])
   const [ashaWorkers, setAshaWorkers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedTaluka, setSelectedTaluka] = useState(SANGLI_TALUKAS[0])
+  const [selectedTaluka, setSelectedTaluka] = useState(BENGALURU_ZONES[0])
 
   const g = useMemo(() => ({
     text: 'var(--g-text)', muted: 'var(--g-muted)', label: 'var(--g-label)', accent: 'var(--g-accent)',
@@ -72,12 +72,12 @@ export default function THOAnalyticsPage() {
   // Aggregate Data
   const talukaData = useMemo(() => {
     const stats = {}
-    SANGLI_TALUKAS.forEach(t => {
+    BENGALURU_ZONES.forEach(t => {
       stats[t] = { name: t, critical: 0, moderate: 0, stable: 0, totalSick: 0, ashas: [] }
     })
 
     triageRecords.forEach(r => {
-      const match = SANGLI_TALUKAS.find(t => t.toLowerCase() === (r.tehsil || r.village || '').toLowerCase())
+      const match = BENGALURU_ZONES.find(t => t.toLowerCase() === (r.tehsil || r.village || '').toLowerCase())
       if (match) {
         const key = match
         stats[key].totalSick++
@@ -88,7 +88,7 @@ export default function THOAnalyticsPage() {
     })
 
     ashaWorkers.forEach(a => {
-      const match = SANGLI_TALUKAS.find(t => t.toLowerCase() === (a.location || '').toLowerCase())
+      const match = BENGALURU_ZONES.find(t => t.toLowerCase() === (a.location || '').toLowerCase())
       if (match) {
         stats[match].ashas.push(a)
       }
@@ -230,7 +230,7 @@ export default function THOAnalyticsPage() {
           <div className="elevated-panel" style={{ background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
              <div style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}`, background: isDark ? 'linear-gradient(180deg,rgba(59,130,246,0.12),rgba(59,130,246,0.02))' : 'linear-gradient(180deg,rgba(59,130,246,0.08),rgba(59,130,246,0.01))' }}>
                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: g.text, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <TargetIcon /> Sangli District Maps
+                  <TargetIcon /> Bengaluru District Maps
                 </h3>
              </div>
              <div className="analyt-list" style={{ padding: '1rem', flex: 1 }}>
