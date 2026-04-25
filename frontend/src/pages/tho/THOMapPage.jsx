@@ -16,10 +16,10 @@ export default function THOMapPage() {
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Map is always locked to Sangli district for the demo
-  const thoDistrict = 'Sangli'
-  const center = DISTRICT_CENTERS['Sangli']
-  const bounds = DISTRICT_BOUNDS['Sangli']
+  // Map is always locked to Bengaluru district for the demo
+  const thoDistrict = 'Bengaluru'
+  const center = DISTRICT_CENTERS['Bengaluru']
+  const bounds = DISTRICT_BOUNDS['Bengaluru']
 
   const g = useMemo(() => ({
     text: 'var(--g-text)', muted: 'var(--g-muted)', accent: 'var(--g-accent)',

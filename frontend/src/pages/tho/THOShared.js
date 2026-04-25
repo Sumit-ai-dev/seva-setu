@@ -1,9 +1,9 @@
 export { apiFetch as apiFetch } from '../../lib/api'
-export const API = 'https://swasthya-setu-full.onrender.com/api/v1'
+export const API = 'http://localhost:8000/api/v1'
 
 export const DISTRICT_CENTERS = {
   'Sangli': [17.0000, 74.5800],
-  'Pune': [18.5204, 73.8567],
+  'Bengaluru': [12.9716, 77.5946],
   'Mumbai': [19.0760, 72.8777],
   'Nagpur': [21.1458, 79.0882],
   'Nashik': [20.0059, 73.7897],
@@ -18,7 +18,7 @@ export const DISTRICT_CENTERS = {
 
 export const DISTRICT_BOUNDS = {
   'Sangli': [[16.60, 73.90], [17.55, 75.40]],
-  'Pune': [[17.85, 73.20], [19.20, 74.70]],
+  'Bengaluru': [[12.80, 77.40], [13.15, 77.80]],
   'Mumbai': [[18.85, 72.70], [19.35, 73.10]],
   'Nagpur': [[20.60, 78.40], [21.70, 79.80]],
   'Nashik': [[19.40, 73.20], [20.60, 74.60]],
