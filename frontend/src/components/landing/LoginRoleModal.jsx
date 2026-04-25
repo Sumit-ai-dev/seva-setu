@@ -20,7 +20,7 @@ const ROLES = [
   {
     id: 'tho',
     title: 'Taluka Health Officer',
-    titleOdia: 'तालुका आरोग्य अधिकारी',
+    titleOdia: 'ತಾಲೂಕು आरोग्य अधिकारी',
     icon: '🏛️',
     image: loginImg3,
     description: 'Oversee district health metrics and coordinate response logistics.',

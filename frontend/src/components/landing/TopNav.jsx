@@ -4,9 +4,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useScrollDirection } from '../../hooks/useScrollDirection'
 
 const NAV = [
-  { path: '/home', label: 'Dashboard', marathi: 'डॅशबोर्ड' },
-  { path: '/patient', label: 'Patient Triage', marathi: 'रुग्ण ट्रायज' },
-  { path: '/chat', label: 'AI Chat', marathi: 'AI चॅट' },
+  { path: '/home', label: 'Dashboard', kannada: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್' },
+  { path: '/patient', label: 'Patient Triage', kannada: 'ರೋಗಿಯ ಟ್ರಯಾಜ್' },
+  { path: '/chat', label: 'AI Chat', kannada: 'AI ಚಾಟ್' },
 ]
 
 export default function TopNav() {
@@ -64,7 +64,7 @@ export default function TopNav() {
               onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) translateY(0)'; if (!active) e.currentTarget.style.color = 'var(--text-muted)'; }}
             >
               <span>{item.label}</span>
-              <span style={{ fontSize: '0.6875rem', opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.marathi}</span>
+              <span style={{ fontSize: '0.6875rem', opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.kannada}</span>
             </button>
           )
         })}

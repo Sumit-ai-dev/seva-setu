@@ -8,7 +8,7 @@ import logoSrc from '../../images/logo/logo.jpg'
 import img1 from '../../images/landing/hero1.jpg'
 import img2 from '../../images/landing/hero2.jpg'
 
-import sumitAvatar from '../../images/landing/sumit.png'
+import sumitPic from '../../images/landing/sumit.jpg'
 
 const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
 const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
@@ -240,7 +240,7 @@ export default function LandingPage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
             {[
-              { src: sumitAvatar, name: 'Sumit Das', role: 'Open Source Developer | AI + Cybersecurity Builder', bio: 'Specializing in AI engineering and system architecture, Sumit built this platform to bring advanced healthcare solutions to remote areas.', quote: `"Bridging the healthcare gap in rural India with intelligent digital infrastructure."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' }
+              { src: sumitPic, name: 'Sumit Das', role: 'Open Source Developer | AI + Cybersecurity Builder', bio: 'Specializing in AI engineering and system architecture, Sumit built this platform to bring advanced healthcare solutions to remote areas.', quote: `"Bridging the healthcare gap in rural India with intelligent digital infrastructure."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' }
             ].map(({ src, name, role, bio, quote, grad }, index) => (
               <div
                 key={name}

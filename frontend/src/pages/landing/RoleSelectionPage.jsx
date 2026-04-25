@@ -6,9 +6,9 @@ import { useAuth } from '../../hooks/useAuth'
 
 const marqueeItems = [
   { text: 'Health is not a privilege — it reaches every door', lang: 'en' },
-  { text: 'घराघरांत आरोग्य, गावोगावी आशा', lang: 'mr' },
+  { text: 'घराघरांत आरोग्य, ಗ್ರಾಮोಗ್ರಾಮी आशा', lang: 'mr' },
   { text: 'Your ASHA worker is closer than the nearest hospital', lang: 'en' },
-  { text: 'आपलं गाव, आपली जबाबदारी — आरोग्य हा आपला हक्क', lang: 'mr' },
+  { text: 'आपलं ಗ್ರಾಮ, आपली जबाबदारी — आरोग्य हा आपला हक्क', lang: 'mr' },
   { text: 'No village too far, no family left behind', lang: 'en' }
 ]
 
@@ -43,7 +43,7 @@ export default function RoleSelectionPage() {
     {
       id: 'tho',
       title: 'Taluka Health Officer',
-      titleOdia: 'तालुका आरोग्य अधिकारी',
+      titleOdia: 'ತಾಲೂಕು आरोग्य अधिकारी',
       icon: '🏛️',
       path: '/login/tho',
       color: '#0a5040'

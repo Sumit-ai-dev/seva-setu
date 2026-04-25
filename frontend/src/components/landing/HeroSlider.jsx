@@ -22,7 +22,7 @@ const slides = [
   {
     id: 'tho',
     role: 'Taluka Health Officer',
-    roleOdia: 'तालुका आरोग्य अधिकारी',
+    roleOdia: 'ತಾಲೂಕು आरोग्य अधिकारी',
     tagline: 'District-Wide Health Command',
     description: 'Monitor district health metrics, approve escalations, and coordinate multi-village response logistics.',
     cta: 'Sign in as Taluka Health Officer',
@@ -171,7 +171,7 @@ export default function HeroSlider() {
                     {s.role}
                   </h2>
 
-                  {/* Marathi subtitle */}
+                  {/* Kannada subtitle */}
                   <div style={{
                     fontFamily: "'Noto Sans Devanagari', sans-serif",
                     fontSize: '1rem',
