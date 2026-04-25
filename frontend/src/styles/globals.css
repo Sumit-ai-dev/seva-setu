@@ -175,8 +175,8 @@ p {
   font-size: 0.875rem;
 }
 
-.odia-label {
-  font-family: 'Noto Sans Devanagari', var(--font-sans);
+.kannada-label {
+  font-family: 'Noto Sans Kannada', var(--font-sans);
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   display: block;
