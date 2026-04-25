@@ -1,0 +1,25 @@
+# Environment files - NEVER push these
+.env
+backend/.env
+*.env
+
+# Dependencies - too large, not needed
+node_modules/
+backend/__pycache__/
+backend/*.pyc
+*.pyc
+__pycache__/
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite cache
+.vite/

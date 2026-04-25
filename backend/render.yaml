@@ -1,0 +1,11 @@
+
+services:
+  - type: web
+    name: swasthya-setu-full
+    runtime: python
+    buildCommand: apt-get install -y libgles2 libgl1 && pip install -r swasth-scaler/backend/requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: swasth-scaler/backend
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src/swasth-scaler/backend
