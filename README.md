@@ -256,36 +256,66 @@ firebase deploy
 ## 🏗️ Project Structure
 
 ```
-nexus-health/
-├── backend/
-│   ├── main.py              # FastAPI app + CORS + routes
-│   ├── auth.py              # JWT authentication
-│   ├── models.py            # SQLAlchemy database models
-│   ├── schemas.py           # Pydantic validation schemas
-│   ├── database.py          # Async DB connection
-│   ├── requirements.txt     # Python dependencies
+nexus-health/                          # Google-style monorepo
+├── 📁 backend/                        # Python FastAPI REST API
+│   ├── main.py                        # App entrypoint + CORS
+│   ├── auth.py                        # JWT authentication
+│   ├── models.py                      # SQLAlchemy ORM models
+│   ├── schemas.py                     # Pydantic validation schemas
+│   ├── database.py                    # Async DB connection pool
+│   ├── requirements.txt               # Python dependencies
 │   └── routes/
-│       ├── triage_routes.py # Gemini AI triage endpoints
-│       ├── user_routes.py   # ASHA worker management
-│       └── outbreak_routes.py # Disease outbreak tracking
-├── frontend/
+│       ├── triage_routes.py           # Gemini AI triage + Gemma fallback
+│       ├── user_routes.py             # ASHA worker management
+│       └── outbreak_routes.py         # Disease outbreak tracking
+│
+├── 📁 frontend/                       # React 18 + Vite PWA
 │   ├── src/
 │   │   ├── pages/
-│   │   │   ├── landing/     # Landing + role selection
-│   │   │   ├── asha/        # ASHA worker dashboard
-│   │   │   └── tho/         # District health officer dashboard
+│   │   │   ├── landing/               # Landing + role selection pages
+│   │   │   ├── asha/                  # ASHA worker dashboard + forms
+│   │   │   └── tho/                   # District health officer dashboard
 │   │   ├── components/
-│   │   │   ├── common/      # DistrictHeatmap (Google Maps)
-│   │   │   ├── asha/        # ASHA-specific components
-│   │   │   └── landing/     # Landing page components
+│   │   │   ├── common/                # DistrictHeatmap (Google Maps)
+│   │   │   ├── asha/                  # ASHA-specific UI components
+│   │   │   └── landing/               # Landing page components
 │   │   ├── lib/
-│   │   │   ├── guestDemoData.js  # Demo patient data (Bengaluru)
-│   │   │   └── openai.js         # OpenAI fallback client
+│   │   │   ├── guestDemoData.js       # Demo patient data (Bengaluru zones)
+│   │   │   └── openai.js              # OpenAI fallback client
+│   │   ├── hooks/                     # Custom React hooks
+│   │   ├── context/                   # Auth + Theme context providers
 │   │   └── styles/
-│   │       └── globals.css  # Design system tokens
+│   │       └── globals.css            # Design system tokens + dark mode
 │   └── public/
-│       ├── manifest.json    # PWA configuration
-│       └── sw.js            # Service Worker (offline mode)
+│       ├── manifest.json              # PWA app manifest
+│       └── sw.js                      # Service Worker (offline mode)
+│
+├── 📁 ml/                             # Machine Learning
+│   ├── isl_feature/
+│   │   ├── inference/
+│   │   │   └── isl_detector.py        # Real-time ISL gesture detection
+│   │   └── training/
+│   │       ├── train.py               # Model training pipeline
+│   │       └── convert_to_tfjs.py     # TF.js export for browser inference
+│   ├── hand_landmarker.task           # Google MediaPipe hand model
+│   ├── extract_landmarks.py           # Dataset landmark extraction
+│   ├── train_isl.py                   # Main ISL training entrypoint
+│   └── export_tfjs.py                 # TensorFlow.js model export
+│
+├── 📁 scripts/                        # Utility & Data Migration Scripts
+│   ├── replace_demo_locations.py      # Migrate demo data to Karnataka
+│   ├── replace_labels.py              # Update UI label strings
+│   ├── replace_locale.py              # Kannada localization updates
+│   └── replace_triage_labels.py       # Triage severity label updates
+│
+├── 📁 docs/                           # Documentation
+│   └── TRAIN_ISL_PROMPT.md            # ISL model training guide
+│
+├── 📁 .github/
+│   └── workflows/
+│       └── ci.yml                     # GitHub Actions CI (lint + build)
+│
+├── .gitignore
 └── README.md
 ```
 
