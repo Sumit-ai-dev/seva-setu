@@ -66,7 +66,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
     
     // Attempt database save
     try {
-      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+      await apiFetch('/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)
@@ -175,7 +175,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
                   <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Location</label>
                   <input
                     value={location} onChange={e => setLocation(e.target.value)}
-                    placeholder="e.g. Pune"
+                    placeholder="e.g. Bengaluru"
                     style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: '1.5px solid #e5e7eb', fontSize: '0.875rem', color: '#111827', background: '#f9fafb', outline: 'none', fontFamily: 'inherit' }}
                   />
                 </div>
@@ -302,7 +302,7 @@ export function ReviewSection({ role, isDark }) {
     }
     
     try {
-      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+      await apiFetch('/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)
@@ -402,7 +402,7 @@ export function ReviewSection({ role, isDark }) {
               {/* Column 1: Identity & Overall */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your Name (नाव)</label>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your Name (ಹೆಸರು)</label>
                   <input 
                     value={userName} onChange={e => setUserName(e.target.value)}
                     placeholder="E.g. Priya Sharma"

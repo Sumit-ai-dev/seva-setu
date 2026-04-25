@@ -248,7 +248,7 @@ export default function THOLoginPage() {
               Taluka Health Officer Login
             </h1>
             <div style={{ fontWeight: 600, opacity: 0.85, fontSize: '0.9rem' }}>
-              तालुका आरोग्य अधिकारी लॉगिन
+              ತಾಲೂಕು आरोग्य अधिकारी लॉगिन
             </div>
           </div>
 
