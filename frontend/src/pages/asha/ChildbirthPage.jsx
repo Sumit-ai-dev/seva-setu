@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { openai } from '../../lib/openai'
+import { geminiChat } from '../../lib/openai'
 import ChatBubble from '../../components/asha/ChatBubble.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { useTheme } from '../../context/ThemeContext.jsx'
 
-const SYSTEM_PROMPT = `You are a maternal health assistant for ASHA (Accredited Social Health Activist) workers in rural Maharashtra, India.
+const SYSTEM_PROMPT = `You are a maternal health assistant for ASHA (Accredited Social Health Activist) workers in rural Karnataka, India.
 
 Your role is to guide ASHA workers through:
 1. Pre-natal care advice (nutrition, danger signs, ANC visits)
@@ -20,7 +20,7 @@ Your role is to guide ASHA workers through:
    - Baby birthweight <1.5 kg
 5. IMNCI newborn protocols
 
-Always respond in simple, practical language. Use both English and Marathi words when helpful.
+Always respond in simple, practical language. Use both English and Kannada words when helpful.
 If there is a danger sign, respond with: 🔴 REFER IMMEDIATELY and explain why.
 Otherwise give calm, step-by-step guidance.`
 
@@ -94,16 +94,8 @@ export default function ChildbirthPage() {
     setLoading(true)
 
     try {
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...updated.map(m => ({ role: m.role, content: m.content })),
-        ],
-        temperature: 0.4,
-        max_tokens: 600,
-      })
-      const content = response.choices[0]?.message?.content?.trim()
+      const allMessages = updated.map(m => ({ role: m.role, content: m.content }))
+      const content = await geminiChat(SYSTEM_PROMPT, allMessages)
       if (!content) throw new Error('Empty response')
       setMessages(prev => [...prev, { role: 'assistant', content }])
     } catch (err) {
@@ -128,7 +120,7 @@ export default function ChildbirthPage() {
         </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--g-text)' }}>Childbirth Assistant</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--g-muted)', fontWeight: 600 }}>प्रसूती सहाय्यक</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--g-muted)', fontWeight: 600 }}>ಪ್ರಸೂತಿ ಸಹಾಯಕ</div>
         </div>
     </div>
   )
@@ -233,7 +225,7 @@ export default function ChildbirthPage() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about maternal or newborn care… / प्रश्न विचारा…"
+          placeholder="Ask about maternal or newborn care… / ಗರ್ಭಿಣಿ ಮತ್ತು ನವಜಾತ ಆರೈಕೆ ಬಗ್ಗೆ ಕೇಳಿ..."
           disabled={loading}
           rows={1}
           style={{

@@ -65,7 +65,7 @@ export default function ProfilePage() {
       if (!savedName || !savedLoc) { setForceOnboard(true); setIsEditing(true) }
       try {
         const token = localStorage.getItem('access_token')
-        const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+        const res = await apiFetch('/triage_records/', {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (res.ok) setHistory(await res.json())
@@ -80,7 +80,7 @@ export default function ProfilePage() {
     setSaveLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+      await apiFetch('/users/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ full_name: fullName.trim(), location: location2.trim() })
@@ -265,7 +265,7 @@ export default function ProfilePage() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
                   <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text, letterSpacing: '-0.02em' }}>
                     Patient History
-                    <span style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 500, marginLeft: 8 }}>रुग्ण इतिहास</span>
+                    <span style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 500, marginLeft: 8 }}>ರೋಗಿ इतिहास</span>
                   </h2>
                   <span style={{ background: g.accentL, color: g.accentT, padding: '0.25rem 0.875rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 700, border: `1px solid ${g.accentB}` }}>
                     {history.length} Visits

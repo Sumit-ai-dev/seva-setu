@@ -64,7 +64,7 @@ export default function ProfileOverlay({ onClose }) {
       // Load Triage History via custom backend API
       try {
         const token = localStorage.getItem('access_token')
-        const response = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+        const response = await apiFetch('/triage_records/', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -110,7 +110,7 @@ export default function ProfileOverlay({ onClose }) {
         setAvatar(dataUrl)
         if (user) {
           const token = localStorage.getItem('access_token')
-          apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+          apiFetch('/users/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ avatar_b64: dataUrl })
@@ -151,7 +151,7 @@ export default function ProfileOverlay({ onClose }) {
         setBanner(dataUrl)
         if (user) {
           const token = localStorage.getItem('access_token')
-          apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+          apiFetch('/users/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ banner_b64: dataUrl })
@@ -171,7 +171,7 @@ export default function ProfileOverlay({ onClose }) {
     setSaveLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+      await apiFetch('/users/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ full_name: fullName.trim(), location: location.trim() })
@@ -357,7 +357,7 @@ export default function ProfileOverlay({ onClose }) {
                     <div>
                       <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, marginBottom: 6 }}>Location / Village</label>
                       <input
-                        type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="E.g., Pune District"
+                        type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="E.g., Bengaluru District"
                         style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 12, background: '#0f172a', border: '1px solid #334155', color: '#f8fafc', outline: 'none', fontSize: '0.9375rem', boxSizing: 'border-box' }}
                         onFocus={e => e.target.style.borderColor = '#14b8a6'} onBlur={e => e.target.style.borderColor = '#334155'}
                       />
@@ -381,7 +381,7 @@ export default function ProfileOverlay({ onClose }) {
             {/* --- Patient History --- */}
             <div className="po-history-section" style={{ padding: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#e2e8f0' }}>Patient History <span style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 500, marginLeft: 8 }}>रुग्ण इतिहास</span></h3>
+                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#e2e8f0' }}>Patient History <span style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 500, marginLeft: 8 }}>ರೋಗಿ इतिहास</span></h3>
                 <span style={{ background: 'rgba(20, 184, 166, 0.1)', color: '#14b8a6', padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 700 }}>
                   {history.length} Visits
                 </span>

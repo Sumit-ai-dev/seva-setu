@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { openai, getChatSystemPrompt } from '../../lib/openai'
+import { geminiChat, getChatSystemPrompt } from '../../lib/openai'
 import { usePatient } from '../../context/PatientContext.jsx'
 import ChatBubble from '../../components/asha/ChatBubble.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
@@ -9,33 +9,33 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import { apiFetch } from '../../lib/api'
 
 const SEVERITY_BADGE = {
-  green:  { label: 'Stable / स्थिर', cls: 'badge-green' },
-  yellow: { label: 'Moderate / मध्यम', cls: 'badge-yellow' },
-  red:    { label: 'Emergency / तातडीचे', cls: 'badge-red' },
+  green:  { label: 'Stable / ಸ್ಥಿರ', cls: 'badge-green' },
+  yellow: { label: 'Moderate / ಸಾಧಾರಣ', cls: 'badge-yellow' },
+  red:    { label: 'Emergency / ತುರ್ತು', cls: 'badge-red' },
 }
 
 const QUICK_REPLIES = [
-  { odia: 'कोणते औषध द्यावे?', english: 'What medicine should I give?' },
-  { odia: 'ही केस किती गंभीर आहे?', english: 'How serious is this case?' },
-  { odia: 'डॉक्टरांकडे पाठवावे का?', english: 'Should I refer to a doctor?' },
+  { odia: 'ಯಾವ ಔಷಧಿ ಕೊಡಬೇಕು?', english: 'What medicine should I give?' },
+  { odia: 'ಈ ಕೇಸ್ ಎಷ್ಟು ಗಂಭೀರ?', english: 'How serious is this case?' },
+  { odia: 'ವೈದ್ಯರಿಗೆ ಕಳಿಸಬೇಕೇ?', english: 'Should I refer to a doctor?' },
 ]
 
 function buildGreeting(patient, triage) {
   const sickleNote = triage.sickle_cell_risk
-    ? '\n\n🔴 इशारा: या रुग्णाला तात्काळ जिल्हा रुग्णालयात पाठवा.'
+    ? '\n\n🔴 ಎಚ್ಚರಿಕೆ: ಈ ರೋಗಿಯನ್ನು ತಕ್ಷಣ ಜಿಲ್ಲಾ ಆಸ್ಪತ್ರೆಗೆ ಕಳಿಸಿ.'
     : ''
 
   const historyNote = (patient.history && patient.history.length > 1)
-    ? `\n\nया रुग्णाच्या आधीच्या **${patient.history.length}** भेटींचा इतिहास आहे.`
+    ? `\n\nಈ ರೋಗಿಯ **${patient.history.length}** ಹಿಂದಿನ ಭೇಟಿಗಳ ಇತಿಹಾಸ ಇದೆ.`
     : ''
 
-  return `नमस्कार! मी तुमचा AI आरोग्य सहाय्यक आहे.
-रुग्ण **${patient.name}** बद्दल तुमचा काय प्रश्न आहे?
+  return `ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ AI ಆರೋಗ್ಯ ಸಹಾಯಕ.
+ರೋಗಿ **${patient.name}** ಬಗ್ಗೆ ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಏನು?
 
-**ट्रायेज निकाल: ${triage.severity.toUpperCase()}**
+**ಟ್ರಯೇಜ್ ಫಲಿತಾಂಶ: ${triage.severity.toUpperCase()}**
 ${triage.brief}
 
-लक्षणे: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
+ರೋಗಲಕ್ಷಣಗಳು: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
 }
 
 export default function ChatPage() {
@@ -81,7 +81,7 @@ export default function ChatPage() {
     setLoadingPatients(true)
     try {
       const token = localStorage.getItem('access_token')
-      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+      const res = await apiFetch('/triage_records/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -162,13 +162,7 @@ export default function ChatPage() {
     setLoading(true)
     try {
       const systemPrompt = getChatSystemPrompt(patientData, triageResult)
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [{ role: 'system', content: systemPrompt }, ...updatedMessages.map(m => ({ role: m.role, content: m.content }))],
-        temperature: 0.4,
-        max_tokens: 600,
-      })
-      const assistantContent = response.choices[0]?.message?.content?.trim()
+      const assistantContent = await geminiChat(systemPrompt, updatedMessages.map(m => ({ role: m.role, content: m.content })))
       if (!assistantContent) throw new Error('Empty response from model.')
       setMessages(prev => [...prev, { role: 'assistant', content: assistantContent }])
     } catch (err) {
@@ -194,20 +188,7 @@ export default function ChatPage() {
 
     try {
       const systemPrompt = getChatSystemPrompt(patientData, triageResult)
-
-      const apiMessages = [
-        { role: 'system', content: systemPrompt },
-        ...updatedMessages.map((m) => ({ role: m.role, content: m.content })),
-      ]
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: apiMessages,
-        temperature: 0.4,
-        max_tokens: 600,
-      })
-
-      const assistantContent = response.choices[0]?.message?.content?.trim()
+      const assistantContent = await geminiChat(systemPrompt, updatedMessages.map(m => ({ role: m.role, content: m.content })))
       if (!assistantContent) throw new Error('Empty response from model.')
 
       setMessages((prev) => [...prev, { role: 'assistant', content: assistantContent }])
@@ -487,7 +468,7 @@ export default function ChatPage() {
                 {chip.odia}
               </button>
             ))}
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }} className="hide-mobile">मराठीत किंवा इंग्रजीत लिहा</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Kannada', sans-serif" }} className="hide-mobile">ಕನ್ನಡದಲ್ಲಿ ಅಥವಾ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಬರೆಯಿರಿ</span>
           </div>
 
           <form

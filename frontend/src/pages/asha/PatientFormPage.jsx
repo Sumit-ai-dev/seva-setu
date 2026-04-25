@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { usePatient } from '../../context/PatientContext.jsx'
 import { useTriage } from '../../hooks/useTriage'
-import { translateToEnglish, openai } from '../../lib/openai'
+import { translateToEnglish, geminiChat } from '../../lib/openai'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import SignLanguageModal from '../../components/asha/SignLanguageModal.jsx'
 import AIMedicalAdviceCard from '../../components/asha/AIMedicalAdviceCard.jsx'
@@ -21,7 +21,7 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
       <div style={{ background: 'var(--surface)', borderRadius: 16, maxWidth: 480, width: '100%', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
         <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-            हा रुग्ण आधीपासून नोंदलेला आहे
+            हा ರೋಗಿ आधीपासून नोंदलेला आहे
           </div>
           <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: 2 }}>Patient already exists — select or add new</div>
         </div>
@@ -42,7 +42,7 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-main)' }}>{p.name}</div>
                   <div style={{ fontSize: '0.8125rem', color: '#374151', marginTop: 4, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-                    नाव: {p.name} | वय: {p.age} | जिल्हा: {p.district}
+                    ಹೆಸರು: {p.name} | ವಯಸ್ಸು: {p.age} | ಜಿಲ್ಲೆ: {p.district}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                     {p.gender && `${p.gender} · `}{p.triage_records?.length || 0} visit{p.triage_records?.length !== 1 ? 's' : ''}
@@ -66,7 +66,7 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
           </button>
           <button onClick={onNewPatient}
             style={{ flex: 1, minHeight: 44, border: 'none', background: '#0F6E56', color: 'var(--surface)', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-            नाही, नवीन रुग्ण / New
+            नाही, नवीन ರೋಗಿ / New
           </button>
         </div>
       </div>
@@ -74,11 +74,11 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
   )
 }
 
-const ALL_DISTRICTS = [
-  "Angul", "Boudh", "Balangir", "Bargarh", "Balasore", "Bhadrak", "Cuttack", "Deogarh", "Dhenkanal", "Ganjam", "Gajapati", "Jharsuguda", "Jajpur", "Jagatsinghpur", "Khordha", "Keonjhar", "Kalahandi", "Kandhamal", "Koraput", "Kendrapara", "Malkangiri", "Mayurbhanj", "Nabarangpur", "Nuapada", "Nayagarh", "Puri", "Rayagada", "Sambalpur", "Subarnapur", "Sundargarh"
+const DISTRICTS = [
+  "Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayanagara", "Vijayapura", "Yadgir"
 ]
 
-const HIGH_RISK = new Set(["Koraput", "Malkangiri", "Nabarangpur", "Rayagada", "Kalahandi", "Nuapada", "Kandhamal", "Boudh", "Keonjhar", "Mayurbhanj"])
+const HIGH_RISK = new Set(["Raichur", "Yadgir", "Kalaburagi", "Koppal", "Ballari", "Bidar", "Chamarajanagar", "Chitradurga", "Vijayapura", "Gadag"])
 
 export default function PatientFormPage() {
   const navigate = useNavigate()
@@ -103,7 +103,7 @@ export default function PatientFormPage() {
   const [saving, setSaving] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [listening, setListening] = useState(false)
-  const [voiceLang, setVoiceLang] = useState('mr-IN')
+  const [voiceLang, setVoiceLang] = useState('kn-IN')
   const [interimText, setInterimText] = useState('')
   const [translating, setTranslating] = useState(false)
   const [voiceError, setVoiceError] = useState('')
@@ -154,7 +154,7 @@ export default function PatientFormPage() {
       const lookupPatient = async () => {
         try {
           const token = localStorage.getItem('access_token')
-          const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+          const res = await apiFetch('/patients/', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           if (res.ok) {
@@ -179,26 +179,16 @@ export default function PatientFormPage() {
   async function fetchPrecautions(triaged, district) {
     setPrecautionLoading(true)
     try {
-      const resp = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a rural healthcare assistant for Maharashtra.
+      const systemPrompt = `You are a rural healthcare assistant for Karnataka.
 Given a triage result, provide exactly 3 short precautions in simple language that an ASHA worker can follow right now.
 Each precaution must be under 10 words.
-Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precaution 3"],"priority":"immediate|within_hours|monitor_at_home"}`,
-          },
-          {
-            role: 'user',
-            content: `Severity: ${triaged.severity}\nSymptoms: ${(triaged.symptoms || []).join(', ')}\nDistrict: ${district}\nSickle cell risk: ${triaged.sickle_cell_risk}`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 200,
-      })
-      const parsed = JSON.parse(resp.choices[0].message.content)
+Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precaution 3"],"priority":"immediate|within_hours|monitor_at_home"}`
+
+      const userMsg = `Severity: ${triaged.severity}\nSymptoms: ${(triaged.symptoms || []).join(', ')}\nDistrict: ${district}\nSickle cell risk: ${triaged.sickle_cell_risk}`
+
+      const raw = await geminiChat(systemPrompt, [{ role: 'user', content: userMsg }])
+      const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+      const parsed = JSON.parse(cleaned)
       setPrecautionData(parsed)
     } catch {
       setPrecautionData(null)
@@ -208,7 +198,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   const LANG_LABELS = {
-    'mr-IN': { speak: 'लक्षणे सांगा', recording: 'ऐकत आहे… बोला', translating: 'भाषांतर होत आहे…' },
+    'kn-IN': { speak: 'ರೋಗಲಕ್ಷಣಗಳನ್ನು ಹೇಳಿ', recording: 'ಆಲಿಸುತ್ತಿದೆ... ಮಾತನಾಡಿ', translating: 'ಅನುವಾದಿಸಲಾಗುತ್ತಿದೆ...' },
     'hi-IN': { speak: 'लक्षण बताएं', recording: 'सुन रहा हूँ… बोलिए', translating: 'अनुवाद हो रहा है…' },
     'en-IN': { speak: 'Speak symptoms', recording: 'Listening… speak now', translating: null },
   }
@@ -231,7 +221,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       setListening(false)
       setInterimText('')
       if (e.error === 'language-not-supported') {
-        setVoiceError('Marathi voice is not supported in this browser. Try Chrome on Android.')
+        setVoiceError('Kannada voice is not supported in this browser. Try Chrome on Android.')
       } else if (e.error === 'no-speech') {
         setVoiceError('No speech detected. Please try again.')
       } else {
@@ -263,7 +253,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     if (!pendingVoice) return
     const { text, lang } = pendingVoice
     setPendingVoice(null)
-    if (lang === 'mr-IN' || lang === 'hi-IN') {
+    if (lang === 'kn-IN' || lang === 'hi-IN') {
       setTranslating(true)
       try {
         const english = await translateToEnglish(text)
@@ -289,7 +279,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
   async function createNewPatient(patientObj) {
     const token = localStorage.getItem('access_token')
-    const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+    const res = await apiFetch('/patients/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
@@ -318,12 +308,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         district:         patientObj.district,
         severity:         triaged.severity,
         symptoms:         triaged.symptoms,
-        sickle_cell_risk: triaged.sickle_cell_risk,
+        sickle_cell_risk: triaged.sickle_cell_risk || false,
         brief:            triaged.brief,
         latitude:         patientObj.latitude || null,
         longitude:        patientObj.longitude || null,
       }
-      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+      const res = await apiFetch('/triage_records/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -362,7 +352,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
     if (!resolvedPatientId) {
       const token = localStorage.getItem('access_token')
-      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+      const res = await apiFetch('/patients/', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       let existing = []
@@ -478,7 +468,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="name">
               Patient Name
-              <span className="odia-label">रुग्णाचे नाव</span>
+              <span className="kannada-label">ರೋಗಿाचे ಹೆಸರು</span>
             </label>
             <input
               id="name"
@@ -497,7 +487,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="age">
                 Age
-                <span className="odia-label">वय</span>
+                <span className="kannada-label">ವಯಸ್ಸು</span>
               </label>
               <input
                 id="age"
@@ -516,7 +506,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="gender">
                 Gender
-                <span className="odia-label">लिंग</span>
+                <span className="kannada-label">ಲಿಂಗ</span>
               </label>
               <select
                 id="gender"
@@ -526,8 +516,8 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 onChange={handleChange}
               >
                 <option value="">Select</option>
-                <option value="Male">Male / पुरुष</option>
-                <option value="Female">Female / महिला</option>
+                <option value="Male">Male / ಪುರುಷ</option>
+                <option value="Female">Female / ಮಹಿಳೆ</option>
                 <option value="Other">Other / इतर</option>
               </select>
             </div>
@@ -536,7 +526,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="tehsil">
               Tehsil / Taluka
-              <span className="odia-label">तालुका</span>
+              <span className="kannada-label">ತಾಲೂಕು</span>
             </label>
             <input
               id="tehsil"
@@ -552,7 +542,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="district">
               District
-              <span className="odia-label">जिल्हा</span>
+              <span className="kannada-label">ಜಿಲ್ಲೆ</span>
             </label>
             <select
               id="district"
@@ -562,20 +552,20 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               onChange={handleChange}
             >
               <option value="">Select district</option>
-              <optgroup label="High-Risk Districts / उच्च-जोखीम जिल्हे">
-                {ALL_DISTRICTS.filter((d) => HIGH_RISK.has(d)).map((d) => (
+              <optgroup label="High-Risk Districts / ಹೆಚ್ಚಿನ ಅಪಾಯದ ಜಿಲ್ಲೆಗಳು">
+                {DISTRICTS.filter(d => HIGH_RISK.has(d)).sort().map(d => (
                   <option key={d} value={d}>{d} ⚠</option>
                 ))}
               </optgroup>
-              <optgroup label="Other Districts / इतर जिल्हे">
-                {ALL_DISTRICTS.filter((d) => !HIGH_RISK.has(d)).map((d) => (
+              <optgroup label="Other Districts / ಇತರ ಜಿಲ್ಲೆಗಳು">
+                {DISTRICTS.filter((d) => !HIGH_RISK.has(d)).sort().map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </optgroup>
             </select>
             {form.district && HIGH_RISK.has(form.district) && (
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-red)', marginTop: '0.375rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-                ⚠ High-risk district — sickle cell screening recommended
+                ⚠ High-risk district — malnutrition & vector-borne screening recommended / ಅಪೌಷ್ಟಿಕತೆ ತಪಾಸಣೆ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ
               </p>
             )}
           </div>
@@ -585,7 +575,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="symptomText">
               Describe Symptoms
-              <span className="odia-label">लक्षणांचे वर्णन करा</span>
+              <span className="kannada-label">ರೋಗಲಕ್ಷಣಗಳನ್ನು ವಿವರಿಸಿ</span>
             </label>
             <textarea
               id="symptomText"
@@ -601,7 +591,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <label className="form-label">
               GPS Location (Optional)
-              <span className="odia-label">जीपीएस स्थान (ऐच्छिक)</span>
+              <span className="kannada-label">ಜಿಪಿಎಸ್ ಸ್ಥಳ (ಐಚ್ಛಿಕ)</span>
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: 12, border: '1px solid var(--island-border)' }}>
               <button
@@ -658,7 +648,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           >
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {[
-                { code: 'mr-IN', label: 'मराठी' },
+                { code: 'kn-IN', label: 'ಕನ್ನಡ' },
                 { code: 'hi-IN', label: 'हिंदी' },
                 { code: 'en-IN', label: 'English' },
               ].map(({ code, label }) => (
@@ -747,7 +737,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             {pendingVoice && (
               <div style={{ marginTop: '0.75rem', background: 'rgba(15,110,86,0.06)', border: '1.5px solid #0F6E56', borderRadius: 10, padding: '0.75rem 1rem' }}>
                 <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#0F6E56', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>
-                  {voiceLang === 'mr-IN' ? 'ऐकलेले — पुष्टी करा' : voiceLang === 'hi-IN' ? 'सुना गया — पुष्टि करें' : 'Heard — confirm to add'}
+                  {voiceLang === 'kn-IN' ? 'ಕೇಳಿದೆ — ಖಚಿತಪಡಿಸಿ' : voiceLang === 'hi-IN' ? 'सुना गया — पुष्टि करें' : 'Heard — confirm to add'}
                 </div>
                 <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
                   {pendingVoice.text}
@@ -801,7 +791,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             }}
           >
             🤟 ISL Mode — Use Hand Signs
-            <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.8125rem' }}>/ सांकेतिक भाषा</span>
+            <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.8125rem' }}>/ ಸೈನ್ ಭಾಷೆ</span>
           </button>
 
           <SignLanguageModal 
@@ -843,7 +833,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <span>विश्लेषण करा / Analyze</span>
+                <span>ವಿಶ್ಲೇಷಿಸಿ / Analyze</span>
               </>
             )}
           </button>
@@ -911,7 +901,7 @@ function precautionEmoji(text) {
 
 const ODIA_MAP = {
   '💧': 'पुरेसे पाणी आणि ORS द्या',
-  '🛏': 'रुग्णाला विश्रांती द्या',
+  '🛏': 'ರೋಗಿाला विश्रांती द्या',
   '🏥': 'जवळच्या आरोग्य केंद्रात पाठवा',
   '💊': 'डॉक्टरांच्या सल्ल्याने औषध द्या',
   '🥗': 'हलका आहार द्या',
@@ -921,9 +911,9 @@ const ODIA_MAP = {
 
 // ── Severity label helpers for HF/WHO suggestion card ────────────────────────
 const HF_SEV_STYLE = {
-  red:    { bg: '#fdf2f2', border: '#f5b7b1', color: '#c0392b', dot: '#e74c3c', label: 'Emergency', marathi: 'तातडीचे', barColor: '#e74c3c' },
-  yellow: { bg: '#fef9e7', border: '#f8d7a0', color: '#b7770d', dot: '#f39c12', label: 'Moderate',  marathi: 'मध्यम',   barColor: '#f39c12' },
-  green:  { bg: '#eafaf1', border: '#a9dfbf', color: '#1e8449', dot: '#27ae60', label: 'Stable',    marathi: 'स्थिर',   barColor: '#27ae60' },
+  red:    { bg: '#fdf2f2', border: '#f5b7b1', color: '#c0392b', dot: '#e74c3c', label: 'Emergency', kannada: 'ತುರ್ತು', barColor: '#e74c3c' },
+  yellow: { bg: '#fef9e7', border: '#f8d7a0', color: '#b7770d', dot: '#f39c12', label: 'Moderate',  kannada: 'ಸಾಧಾರಣ',   barColor: '#f39c12' },
+  green:  { bg: '#eafaf1', border: '#a9dfbf', color: '#1e8449', dot: '#27ae60', label: 'Stable',    kannada: 'ಸ್ಥಿರ',   barColor: '#27ae60' },
 }
 
 function HFSuggestionCard({ hfResult }) {
@@ -984,7 +974,7 @@ function HFSuggestionCard({ hfResult }) {
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.25rem', color: hc.color }}>{hc.label}</div>
             <div style={{ fontSize: '0.9375rem', color: hc.color, opacity: 0.75, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-              {hc.marathi}
+              {hc.kannada}
             </div>
           </div>
         </div>
@@ -1037,7 +1027,7 @@ function HFSuggestionCard({ hfResult }) {
         </div>
 
         <p style={{ fontSize: '0.6875rem', color: '#9ca3af', margin: '0.625rem 0 0', lineHeight: 1.4 }}>
-          Secondary validation only — OpenAI GPT-4o clinical result above is the primary diagnosis.
+          Secondary validation only — Gemini AI clinical result above is the primary diagnosis.
         </p>
       </div>
     </div>
@@ -1075,7 +1065,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
         <div>
           <div style={{ fontWeight: 800, fontSize: '1.25rem', color: sevColor }}>{sev === 'red' ? 'Emergency' : sev === 'yellow' ? 'Moderate' : 'Stable'}</div>
           <div style={{ fontSize: '0.9375rem', color: sevColor, opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-            {sev === 'red' ? 'तातडीचे' : sev === 'yellow' ? 'मध्यम' : 'स्थिर'}
+            {sev === 'red' ? 'ತುರ್ತು' : sev === 'yellow' ? 'ಸಾಧಾರಣ' : 'ಸ್ಥಿರ'}
           </div>
         </div>
       </div>
@@ -1091,7 +1081,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
         {result.symptoms?.length > 0 && (
           <div style={{ marginBottom: '0.875rem' }}>
             <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.375rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-              Identified Symptoms / ओळखलेली लक्षणे
+              Identified Symptoms / ಗುರುತಿಸಲಾದ ರೋಗಲಕ್ಷಣಗಳು
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {result.symptoms.map((s, i) => (
@@ -1105,7 +1095,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
 
         <div style={{ borderTop: `1px solid ${cardBorder}`, paddingTop: '0.875rem' }}>
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.625rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-            ⚠ काळजीसूचना / Precautions
+            ⚠ ಮುನ್ನೆಚ್ಚರಿಕೆಗಳು / Precautions
           </div>
           {precautionLoading && (
             <div style={{ fontSize: '0.8125rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1142,7 +1132,7 @@ function VisitHistory({ name, patientId }) {
     if (!name || name.trim().length < 3) return
     setLoading(true)
     const token = localStorage.getItem('access_token')
-    apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+    apiFetch('/triage_records/', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

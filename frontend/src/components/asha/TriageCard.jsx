@@ -8,7 +8,7 @@ const SEVERITY_CONFIG = {
     border: '#a9dfbf',
     labelColor: '#1e8449',
     english: 'Safe',
-    marathi: 'सुरक्षित',
+    kannada: 'ಸುರಕ್ಷಿತ',
     badgeClass: 'badge-green',
     headingColor: '#1e8449',
   },
@@ -19,7 +19,7 @@ const SEVERITY_CONFIG = {
     border: '#f8d7a0',
     labelColor: '#b7770d',
     english: 'Moderate',
-    marathi: 'मध्यम',
+    kannada: 'ಸಾಧಾರಣ',
     badgeClass: 'badge-yellow',
     headingColor: '#b7770d',
   },
@@ -30,7 +30,7 @@ const SEVERITY_CONFIG = {
     border: '#f5b7b1',
     labelColor: '#c0392b',
     english: 'Emergency',
-    marathi: 'तातडीने',
+    kannada: 'ತುರ್ತು',
     badgeClass: 'badge-red',
     headingColor: '#c0392b',
   },
@@ -94,7 +94,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
                 marginTop: 2,
               }}
             >
-              {config.marathi}
+              {config.kannada}
             </div>
           </div>
         </div>
@@ -161,7 +161,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
                 marginBottom: '0.5rem',
               }}
             >
-              Identified Symptoms / ओळखलेली लक्षणे
+              Identified Symptoms / ಗುರುತಿಸಲಾದ ರೋಗಲಕ್ಷಣಗಳು
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {symptoms.map((s, i) => (

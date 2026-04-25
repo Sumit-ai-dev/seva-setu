@@ -8,8 +8,8 @@ import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
 import { apiFetch } from '../../lib/api'
 
 /* ─── Constants ──────────────────────────────────────────── */
-const ALL_DISTRICTS = [
-  "Angul", "Boudh", "Balangir", "Bargarh", "Balasore", "Bhadrak", "Cuttack", "Deogarh", "Dhenkanal", "Ganjam", "Gajapati", "Jharsuguda", "Jajpur", "Jagatsinghpur", "Khordha", "Keonjhar", "Kalahandi", "Kandhamal", "Koraput", "Kendrapara", "Malkangiri", "Mayurbhanj", "Nabarangpur", "Nuapada", "Nayagarh", "Puri", "Rayagada", "Sambalpur", "Subarnapur", "Sundargarh"
+const DISTRICTS = [
+  "Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayanagara", "Vijayapura", "Yadgir"
 ]
 const SEV_ORDER = { red: 0, yellow: 1, green: 2 }
 
@@ -198,7 +198,7 @@ export default function ASHADashboardPage() {
         return
       }
 
-      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', { headers: { Authorization: `Bearer ${token}` } })
+      const res = await apiFetch('/triage_records/', { headers: { Authorization: `Bearer ${token}` } })
       let rows = res.ok ? await res.json() : []
       rows = rows || []
 
