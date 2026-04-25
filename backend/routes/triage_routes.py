@@ -68,15 +68,7 @@ async def get_ai_suggestion(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get AI medical suggestions using Hugging Face model.
-
-    Request body:
-    {
-        "symptoms": ["fever", "leg swelling"],
-        "severity": "moderate",
-        "patient_gender": "male/female/other",
-        "patient_age": 35
-    }
+    Get AI medical suggestions using Google Gemini API.
     """
     try:
         symptoms = request.get("symptoms", [])
@@ -93,75 +85,50 @@ async def get_ai_suggestion(
         # Create prompt with demographic context
         demographic_context = f"Patient: {patient_age} years old, {patient_gender}"
 
-        prompt = f"""You are a medical assistant for rural healthcare workers in India. Provide 4-5 key medical suggestions based on the following information.
+        prompt = f"""You are a medical assistant for rural healthcare workers in India. Provide exactly 3 short, actionable medical suggestions based on this info:
 
 {demographic_context}
 Symptoms: {symptoms_text}
 Current severity assessment: {severity}
 
-Important:
-- Provide practical home care suggestions
-- Consider gender-specific symptoms when relevant
-- Include red flags/warning signs to watch for
-- Be conservative and encourage professional medical care when needed
-- Format as bullet points
-- Do NOT provide definitive diagnosis
-- Add appropriate disclaimers about seeking professional care
+STRICT RESTRICTIONS:
+- Maximum 3 bullet points.
+- Maximum 15 words per bullet point.
+- Be extremely brief and direct.
+- Do NOT provide a definitive diagnosis.
+- Do NOT add a long disclaimer at the end.
 
 Suggestions:"""
 
-        hf_token = os.getenv("HF_TOKEN")
-        if not hf_token:
-            logger.error("HF_TOKEN not configured")
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_api_key:
+            logger.error("GEMINI_API_KEY not configured")
             raise HTTPException(status_code=500, detail="AI service not configured")
 
-        # Call Hugging Face Inference API
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                "https://api-inference.huggingface.co/models/alpha-ai/LLAMA3-3B-Medical-COT",
-                headers={"Authorization": f"Bearer {hf_token}"},
-                json={
-                    "inputs": prompt,
-                    "parameters": {
-                        "max_new_tokens": 300,
-                        "temperature": 0.7,
-                        "top_p": 0.9,
-                        "do_sample": True
-                    }
-                }
+        import google.generativeai as genai
+        genai.configure(api_key=gemini_api_key)
+        
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=150,
+                temperature=0.4
             )
+        )
+        suggestion = response.text.strip() if response.text else "Unable to generate suggestions"
 
-            if response.status_code != 200:
-                logger.error(f"HF API error: {response.text}")
-                raise HTTPException(status_code=500, detail="AI service error")
-
-            result = response.json()
-
-            # Extract generated text from response
-            if isinstance(result, list) and len(result) > 0:
-                generated_text = result[0].get("generated_text", "")
-                # Extract only the new suggestion part (after the prompt)
-                if prompt in generated_text:
-                    suggestion = generated_text.split(prompt)[-1].strip()
-                else:
-                    suggestion = generated_text
-            else:
-                suggestion = "Unable to generate suggestions"
-
-            return {
-                "success": True,
-                "suggestion": suggestion,
-                "symptoms": symptoms,
-                "severity": severity,
-                "demographic": {
-                    "age": patient_age,
-                    "gender": patient_gender
-                }
+        return {
+            "success": True,
+            "suggestion": suggestion,
+            "symptoms": symptoms,
+            "severity": severity,
+            "demographic": {
+                "age": patient_age,
+                "gender": patient_gender
             }
+        }
 
-    except httpx.TimeoutError:
-        logger.error("HF API timeout")
-        raise HTTPException(status_code=504, detail="AI service timeout")
     except Exception as e:
         logger.error(f"AI suggestion error: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")

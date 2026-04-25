@@ -5,7 +5,7 @@
  * symptom text into Emergency / Moderate / Stable.
  * Falls back to WHO keyword rules if HF is unavailable or too slow.
  *
- * This is a secondary suggestion layer — OpenAI GPT-4o remains primary.
+ * This is a secondary suggestion layer — Gemini AI remains primary.
  */
 
 const HF_TOKEN = import.meta.env.VITE_HF_TOKEN
@@ -24,7 +24,7 @@ export async function getHFTriage(symptoms) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          inputs: `ASHA worker in rural Maharashtra reports: ${symptoms}. Common rural India conditions include pneumonia, malaria, dengue, severe diarrhoea, malnutrition, newborn danger signs.`,
+          inputs: `ASHA worker in rural Karnataka reports: ${symptoms}. Common rural India conditions include pneumonia, malaria, dengue, severe diarrhoea, malnutrition, newborn danger signs.`,
           parameters: {
             candidate_labels: [
               'emergency - immediate referral needed: convulsions, severe breathing difficulty, unconscious, severe dehydration, high fever with rash, newborn not feeding',

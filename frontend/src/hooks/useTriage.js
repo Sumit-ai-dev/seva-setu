@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { openai, getTriageSystemPrompt } from '../lib/openai'
+import { getTriageSystemPrompt, geminiTriage } from '../lib/openai'
 import { getHFTriage, getWHOTriage } from '../lib/triageHF'
 
 export function useTriage() {
@@ -33,25 +33,17 @@ export function useTriage() {
     setResult(null)
     setHfResult(null)
 
-    // Fire OpenAI (primary) and HF (secondary suggestion) in parallel
-    const [openAISettled, hfSettled] = await Promise.allSettled([
-      openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: getTriageSystemPrompt(district) },
-          { role: 'user',   content: `Patient symptoms: ${symptomText}` },
-        ],
-        temperature: 0.2,
-        max_tokens: 300,
-      }),
+    // Fire Gemini (primary) and HF (secondary suggestion) in parallel
+    const [geminiSettled, hfSettled] = await Promise.allSettled([
+      geminiTriage(getTriageSystemPrompt(district), symptomText),
       getHFTriage(symptomText),
     ])
 
-    // ── Process OpenAI (primary) ──────────────────────────────────────────────
+    // ── Process Gemini (primary) ──────────────────────────────────────────────
     let parsed = null
-    if (openAISettled.status === 'fulfilled') {
+    if (geminiSettled.status === 'fulfilled') {
       try {
-        const raw = openAISettled.value.choices[0]?.message?.content?.trim()
+        const raw = geminiSettled.value
         if (!raw) throw new Error('Empty response from AI model.')
         const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
         parsed = JSON.parse(cleaned)
@@ -70,13 +62,12 @@ export function useTriage() {
         return null
       }
     } else {
-      setError(openAISettled.reason?.message || 'Failed to analyze symptoms. Please try again.')
+      setError(geminiSettled.reason?.message || 'Failed to analyze symptoms. Please try again.')
       setLoading(false)
       return null
     }
 
     // ── Process HF (secondary suggestion) ────────────────────────────────────
-    // HF wins if it responded; otherwise fall back to WHO keyword rules
     const hfRaw = hfSettled.status === 'fulfilled' ? hfSettled.value : null
     const suggestion = hfRaw || getWHOTriage(symptomText)
     setHfResult(suggestion)
