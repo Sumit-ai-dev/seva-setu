@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from openai import OpenAI
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 # Add backend folder to path
@@ -146,9 +147,18 @@ except Exception as e:
     logger.error(f"OpenAI init failed: {e}")
     openai_client = None
 
+# Initialize Gemini client
+try:
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    logger.info("Gemini client initialized")
+except Exception as e:
+    logger.error(f"Gemini init failed: {e}")
+    gemini_model = None
+
 TRIAGE_SYSTEM_PROMPT = """
 You are a rural healthcare triage assistant for ASHA workers
-in Odisha, India. Apply WHO IMNCI triage rules.
+in Karnataka, India. Apply WHO IMNCI triage rules.
 
 RED (Emergency - refer immediately):
 - Unable to drink or feed
@@ -187,8 +197,8 @@ async def health():
     return {"status": "ok", "service": "swasthya-setu-backend"}
 
 
-MAHARASHTRA_THOS = [
-    ("THO001", "Dr. Pradhan",  "Pune"),
+KARNATAKA_THOS = [
+    ("THO001", "Dr. Pradhan",  "Bengaluru"),
     ("THO002", "Dr. Sharma",   "Mumbai"),
     ("THO003", "Dr. Kulkarni", "Nagpur"),
     ("THO004", "Dr. Deshmukh", "Nashik"),
@@ -201,12 +211,12 @@ MAHARASHTRA_THOS = [
     ("THO011", "Dr. Chavan",   "Sangli"),
 ]
 
-@app.post("/api/v1/migrate-maharashtra-thos")
-async def migrate_maharashtra_thos():
-    """One-time migration: upsert Maharashtra THO accounts."""
+@app.post("/api/v1/migrate-karnataka-thos")
+async def migrate_karnataka_thos():
+    """One-time migration: upsert Karnataka THO accounts."""
     async with AsyncSessionLocal() as session:
         created, updated = [], []
-        for emp_id, name, district in MAHARASHTRA_THOS:
+        for emp_id, name, district in KARNATAKA_THOS:
             result = await session.execute(select(User).where(User.employee_id == emp_id))
             existing = result.scalar_one_or_none()
             if existing:
@@ -271,55 +281,139 @@ async def webhook_call(request: Request):
             except Exception as e:
                 logger.error(f"Audio download failed: {e}")
 
-        # Transcribe with Whisper
+        # Transcribe audio — try Gemini first, fallback to Whisper
         original_transcript = ""
-        if audio_bytes and openai_client:
+        if audio_bytes and gemini_model:
+            try:
+                logger.info("[AI] Using Gemini for transcription")
+                import tempfile, pathlib
+                with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                    tmp.write(audio_bytes)
+                    tmp_path = tmp.name
+                audio_file = genai.upload_file(tmp_path)
+                result = gemini_model.generate_content(
+                    ["Transcribe this audio recording of a patient describing their symptoms. Return ONLY the transcription text.", audio_file]
+                )
+                original_transcript = result.text.strip()
+                os.unlink(tmp_path)
+                logger.info(f"Gemini Transcript: {original_transcript}")
+            except Exception as e:
+                logger.warn(f"Gemini transcription failed, trying Whisper: {e}")
+                if audio_bytes and openai_client:
+                    try:
+                        result = openai_client.audio.transcriptions.create(
+                            model="whisper-1",
+                            file=("recording.mp3", audio_bytes, "audio/mpeg"),
+                            language="kn"
+                        )
+                        original_transcript = result.text
+                        logger.info(f"Whisper Transcript: {original_transcript}")
+                    except Exception as e2:
+                        logger.error(f"Whisper also failed: {e2}")
+                        original_transcript = "Transcription failed"
+        elif audio_bytes and openai_client:
             try:
                 result = openai_client.audio.transcriptions.create(
                     model="whisper-1",
                     file=("recording.mp3", audio_bytes, "audio/mpeg"),
-                    language="or"
+                    language="kn"
                 )
                 original_transcript = result.text
-                logger.info(f"Transcript: {original_transcript}")
+                logger.info(f"Whisper Transcript: {original_transcript}")
             except Exception as e:
                 logger.error(f"Whisper failed: {e}")
                 original_transcript = "Transcription failed"
 
-        # Translate to 3 languages
+        # Translate — try Gemini first, fallback to OpenAI
         translations = {
             "english": original_transcript,
             "hindi": original_transcript,
-            "odia": original_transcript
+            "kannada": original_transcript
         }
-        if original_transcript and openai_client:
+        if original_transcript and gemini_model:
+            try:
+                logger.info("[AI] Using Gemini for translation")
+                trans_result = gemini_model.generate_content(
+                    f"""Translate this text to English, Hindi, and Kannada.
+Return ONLY valid JSON no markdown:
+{{"english": "translation", "hindi": "translation", "kannada": "translation"}}
+Text: {original_transcript}"""
+                )
+                raw = trans_result.text.strip()
+                cleaned = raw.replace('```json', '').replace('```', '').strip()
+                translations = json.loads(cleaned)
+                logger.info("Gemini translations done")
+            except Exception as e:
+                logger.warn(f"Gemini translation failed, trying OpenAI: {e}")
+                if openai_client:
+                    try:
+                        translation_response = openai_client.chat.completions.create(
+                            model="gpt-4o",
+                            messages=[{
+                                "role": "user",
+                                "content": f"""Translate this text to English, Hindi, and Kannada.
+Return ONLY valid JSON no markdown:
+{{"english": "translation", "hindi": "translation", "kannada": "translation"}}
+Text: {original_transcript}"""
+                            }],
+                            response_format={"type": "json_object"}
+                        )
+                        translations = json.loads(translation_response.choices[0].message.content)
+                        logger.info("OpenAI translations done")
+                    except Exception as e2:
+                        logger.error(f"OpenAI translation also failed: {e2}")
+        elif original_transcript and openai_client:
             try:
                 translation_response = openai_client.chat.completions.create(
                     model="gpt-4o",
                     messages=[{
                         "role": "user",
-                        "content": f"""Translate this text to English, Hindi, and Odia.
+                        "content": f"""Translate this text to English, Hindi, and Kannada.
 Return ONLY valid JSON no markdown:
-{{"english": "translation", "hindi": "translation", "odia": "translation"}}
+{{"english": "translation", "hindi": "translation", "kannada": "translation"}}
 Text: {original_transcript}"""
                     }],
                     response_format={"type": "json_object"}
                 )
-                translations = json.loads(
-                    translation_response.choices[0].message.content
-                )
-                logger.info("Translations done")
+                translations = json.loads(translation_response.choices[0].message.content)
+                logger.info("OpenAI translations done")
             except Exception as e:
                 logger.error(f"Translation failed: {e}")
 
-        # Run IMNCI triage
+        # Run IMNCI triage — try Gemini first, fallback to OpenAI
         triage_result = {
             "symptoms": [],
             "severity": "yellow",
             "sickle_cell_risk": False,
             "brief": "Unable to process triage"
         }
-        if translations.get("english") and openai_client:
+        if translations.get("english") and gemini_model:
+            try:
+                logger.info("[AI] Using Gemini for triage")
+                triage_resp = gemini_model.generate_content(
+                    f"{TRIAGE_SYSTEM_PROMPT}\n\nPatient symptoms: {translations['english']}"
+                )
+                raw = triage_resp.text.strip()
+                cleaned = raw.replace('```json', '').replace('```', '').strip()
+                triage_result = json.loads(cleaned)
+                logger.info(f"Gemini Triage: {triage_result}")
+            except Exception as e:
+                logger.warn(f"Gemini triage failed, trying OpenAI: {e}")
+                if openai_client:
+                    try:
+                        triage_response = openai_client.chat.completions.create(
+                            model="gpt-4o",
+                            messages=[
+                                {"role": "system", "content": TRIAGE_SYSTEM_PROMPT},
+                                {"role": "user", "content": translations["english"]}
+                            ],
+                            response_format={"type": "json_object"}
+                        )
+                        triage_result = json.loads(triage_response.choices[0].message.content)
+                        logger.info(f"OpenAI Triage: {triage_result}")
+                    except Exception as e2:
+                        logger.error(f"OpenAI triage also failed: {e2}")
+        elif translations.get("english") and openai_client:
             try:
                 triage_response = openai_client.chat.completions.create(
                     model="gpt-4o",
@@ -329,10 +423,8 @@ Text: {original_transcript}"""
                     ],
                     response_format={"type": "json_object"}
                 )
-                triage_result = json.loads(
-                    triage_response.choices[0].message.content
-                )
-                logger.info(f"Triage: {triage_result}")
+                triage_result = json.loads(triage_response.choices[0].message.content)
+                logger.info(f"OpenAI Triage: {triage_result}")
             except Exception as e:
                 logger.error(f"Triage failed: {e}")
 
