@@ -5,10 +5,10 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const NAV = [
-  { path: '/home', label: 'Dashboard', marathi: 'डॅशबोर्ड' },
-  { path: '/patient', label: 'Patient Triage', marathi: 'रुग्ण ट्रायज' },
-  { path: '/chat', label: 'AI Chat', marathi: 'AI चॅट' },
-  { path: '/isl', label: 'ISL Sign Language', marathi: 'सांकेतिक भाषा' },
+  { path: '/home', label: 'Dashboard', kannada: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್' },
+  { path: '/patient', label: 'Patient Triage', kannada: 'ರೋಗಿಯ ಟ್ರಯಾಜ್' },
+  { path: '/chat', label: 'AI Chat', kannada: 'AI ಚಾಟ್' },
+  { path: '/isl', label: 'ISL Sign Language', kannada: 'ಸೈನ್ ಭಾಷೆ' },
 ]
 
 export default function TopNav() {
@@ -63,7 +63,7 @@ export default function TopNav() {
               }}
             >
               <span>{item.label}</span>
-              <span style={{ fontSize: '0.6875rem', opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.marathi}</span>
+              <span style={{ fontSize: '0.6875rem', opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.kannada}</span>
             </button>
           )
         })}
@@ -106,7 +106,7 @@ try {
   
   // Replace the heading
   const oldHeading = \`<div>
-            <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#111' }}>डॅशबोर्ड</div>
+            <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#111' }}>ಡ್ಯಾಶ್‌ಬೋರ್ಡ್</div>
             <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Dashboard</div>
           </div>\`;
   const newHeading = \`<button onClick={() => navigate('/')} style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>

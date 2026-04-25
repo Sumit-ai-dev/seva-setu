@@ -3,7 +3,7 @@ import fs from 'fs';
 const mhd = [
   'Ahilyanagar', 'Akola', 'Amravati', 'Beed', 'Bhandara', 'Buldhana', 'Chandrapur', 'Chhatrapati Sambhajinagar',
   'Dharashiv', 'Dhule', 'Gadchiroli', 'Gondia', 'Hingoli', 'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai City',
-  'Mumbai Suburban', 'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Palghar', 'Parbhani', 'Pune', 'Raigad',
+  'Mumbai Suburban', 'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Palghar', 'Parbhani', 'Bengaluru', 'Raigad',
   'Ratnagiri', 'Sangli', 'Satara', 'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
 ];
 const hrmh = ['Gadchiroli', 'Chandrapur', 'Nagpur', 'Wardha', 'Bhandara', 'Gondia', 'Amravati', 'Yavatmal', 'Akola', 'Washim', 'Buldhana', 'Nandurbar', 'Dhule'];
@@ -13,11 +13,11 @@ try {
   let hp = fs.readFileSync('src/pages/HomePage.jsx', 'utf8');
   hp = hp.replace(/const ALL_DISTRICTS = \[\s*[\s\S]*?\s*\]/, 'const ALL_DISTRICTS = ' + JSON.stringify(mhd, null, 2));
   hp = hp.replaceAll('Noto Sans Oriya', 'Noto Sans Devanagari');
-  hp = hp.replaceAll('ଡ୍ୟାଶବୋର୍ଡ', 'डॅशबोर्ड');
+  hp = hp.replaceAll('ଡ୍ୟାଶବୋର୍ଡ', 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್');
   hp = hp.replaceAll('ନୂତନ ରୋଗୀ', 'नवीन रुग्ण');
-  hp = hp.replaceAll('ଜରୁରୀ', 'तातडीने');
-  hp = hp.replaceAll('ମଧ୍ୟମ', 'मध्यम');
-  hp = hp.replaceAll('ସ୍ଥିର', 'स्थिर');
+  hp = hp.replaceAll('ଜରୁରୀ', 'ತುರ್ತು');
+  hp = hp.replaceAll('ମଧ୍ୟମ', 'ಸಾಧಾರಣ');
+  hp = hp.replaceAll('ସ୍ଥିର', 'ಸ್ಥಿರ');
   hp = hp.replaceAll('ତ୍ରୁଟି ଘଟିଛି', 'काहीतरी चूक झाली');
   hp = hp.replaceAll('ପୁନଃ ଚେଷ୍ଟା', 'पुन्हा प्रयत्न करा');
   hp = hp.replaceAll('କୋଣସି ରୋଗୀ ମିଳିଲା ନାହିଁ', 'कोणतेही रुग्ण आढळले नाहीत');
@@ -51,9 +51,9 @@ try {
   pf = pf.replace("{ code: 'or-IN', label: 'ଓଡ଼ିଆ' }", "{ code: 'mr-IN', label: 'मराठी' }");
   pf = pf.replaceAll("'or-IN'", "'mr-IN'");
   pf = pf.replace("'or-IN': { speak: 'ଲକ୍ଷଣ କୁହନ୍ତୁ', recording: 'ଶୁଣୁଛି… କହନ୍ତୁ', translating: 'ଅନୁବାଦ ହେଉଛି…' }", "'mr-IN': { speak: 'लक्षणे सांगा', recording: 'ऐकत आहे... बोला', translating: 'भाषांतर होत आहे...' }");
-  pf = pf.replaceAll('Odia voice', 'Marathi voice');
+  pf = pf.replaceAll('Odia voice', 'Kannada voice');
   pf = pf.replaceAll('ଓଡ଼ିଆ', 'मराठी');
-  pf = pf.replaceAll('ସାଙ୍କେତିକ ଭାଷା', 'सांकेतिक भाषा');
+  pf = pf.replaceAll('ସାଙ୍କେତିକ ଭାଷା', 'ಸೈನ್ ಭಾಷೆ');
   pf = pf.replaceAll('ବିଶ୍ଳେଷଣ କରୁଛି…', 'विश्लेषण करत आहे...');
   pf = pf.replaceAll('ବିଶ୍ଳେଷଣ କରନ୍ତୁ', 'विश्लेषण करा');
   pf = pf.replaceAll('ସତର୍କତା: ସିକଲ ସେଲ ଆଶଙ୍କା', 'चेतावणी: सिकलसेलचा धोका');
@@ -63,10 +63,10 @@ try {
   // Sidebar.jsx
   let sb = fs.readFileSync('src/components/Sidebar.jsx', 'utf8');
   sb = sb.replaceAll('Noto Sans Oriya', 'Noto Sans Devanagari');
-  sb = sb.replaceAll('ଡ୍ୟାଶବୋର୍ଡ', 'डॅशबोर्ड');
-  sb = sb.replaceAll('ରୋଗୀ ଟ୍ରାଏଜ', 'रुग्ण ट्रायज');
-  sb = sb.replaceAll('AI ଚ୍ୟାଟ', 'AI चॅट');
-  sb = sb.replaceAll('ସଙ୍କେତ', 'सांकेतिक भाषा');
+  sb = sb.replaceAll('ଡ୍ୟାଶବୋର୍ଡ', 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್');
+  sb = sb.replaceAll('ରୋଗୀ ଟ୍ରାଏଜ', 'ರೋಗಿಯ ಟ್ರಯಾಜ್');
+  sb = sb.replaceAll('AI ଚ୍ୟାଟ', 'AI ಚಾಟ್');
+  sb = sb.replaceAll('ସଙ୍କେତ', 'ಸೈನ್ ಭಾಷೆ');
   sb = sb.replaceAll('ସ୍ୱାସ୍ଥ୍ୟ ସେତୁ', 'आरोग्य सेतू');
   sb = sb.replaceAll('ଲଗ ଆଉଟ', 'लॉग आउट');
   fs.writeFileSync('src/components/Sidebar.jsx', sb);
@@ -75,24 +75,24 @@ try {
   let isl = fs.readFileSync('src/pages/ISLPage.jsx', 'utf8');
   isl = isl.replaceAll('Noto Sans Oriya', 'Noto Sans Devanagari');
   isl = isl.replaceAll('ସ୍ୱାସ୍ଥ୍ୟ ସେତୁ', 'आरोग्य सेतू');
-  isl = isl.replaceAll('ସାଙ୍କେତିକ ଭାଷା', 'सांकेतिक भाषा');
+  isl = isl.replaceAll('ସାଙ୍କେତିକ ଭାଷା', 'ಸೈನ್ ಭಾಷೆ');
   fs.writeFileSync('src/pages/ISLPage.jsx', isl);
 
   // ChatPage.jsx
   let chat = fs.readFileSync('src/pages/ChatPage.jsx', 'utf8');
   chat = chat.replaceAll('Noto Sans Oriya', 'Noto Sans Devanagari');
   chat = chat.replaceAll('ଓଡ଼ିଆ', 'मराठी');
-  chat = chat.replace(/odia\:/g, 'marathi:');
+  chat = chat.replace(/odia\:/g, 'kannada:');
   fs.writeFileSync('src/pages/ChatPage.jsx', chat);
 
   // TriageCard.jsx
   if (fs.existsSync('src/components/TriageCard.jsx')) {
     let tc = fs.readFileSync('src/components/TriageCard.jsx', 'utf8');
     tc = tc.replaceAll('Noto Sans Oriya', 'Noto Sans Devanagari');
-    tc = tc.replaceAll('ସୁରକ୍ଷିତ', 'सुरक्षित');
-    tc = tc.replaceAll('ମଧ୍ୟମ', 'मध्यम');
-    tc = tc.replaceAll('ଜରୁରୀ', 'तातडीने');
-    tc = tc.replace(/odia\:/g, 'marathi:');
+    tc = tc.replaceAll('ସୁରକ୍ଷିତ', 'ಸುರಕ್ಷಿತ');
+    tc = tc.replaceAll('ମଧ୍ୟମ', 'ಸಾಧಾರಣ');
+    tc = tc.replaceAll('ଜରୁରୀ', 'ತುರ್ತು');
+    tc = tc.replace(/odia\:/g, 'kannada:');
     fs.writeFileSync('src/components/TriageCard.jsx', tc);
   }
 

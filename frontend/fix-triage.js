@@ -20,7 +20,7 @@ file = file.replace(
 const MH_DISTRICTS = [
   "Ahilyanagar", "Akola", "Amravati", "Beed", "Bhandara", "Buldhana", "Chandrapur", "Chhatrapati Sambhajinagar", 
   "Dharashiv", "Dhule", "Gadchiroli", "Gondia", "Hingoli", "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", 
-  "Mumbai Suburban", "Nagpur", "Nanded", "Nandurbar", "Nashik", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri", 
+  "Mumbai Suburban", "Nagpur", "Nanded", "Nandurbar", "Nashik", "Palghar", "Parbhani", "Bengaluru", "Raigad", "Ratnagiri", 
   "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"
 ];
 file = file.replace(
@@ -34,7 +34,7 @@ file = file.replace(
   'const HIGH_RISK = new Set(["Gadchiroli","Chandrapur","Nagpur","Wardha","Bhandara","Gondia","Amravati","Yavatmal","Akola","Washim","Buldhana","Nandurbar","Dhule"])'
 );
 
-// 6. Marathi strings
+// 6. Kannada strings
 file = file.replace(/ନୂତନ ରୋଗୀ/g, 'नवीन रुग्ण');
 file = file.replace(/ରୋଗୀର ନାମ/g, 'रुग्णाचे नाव');
 file = file.replace(/ବୟସ/g, 'वय');
