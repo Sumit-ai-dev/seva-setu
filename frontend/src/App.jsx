@@ -11,6 +11,9 @@ import ChatPage from './pages/asha/ChatPage.jsx'
 import ISLPage from './pages/asha/ISLPage.jsx'
 import ProfilePage from './pages/asha/ProfilePage.jsx'
 import ChildbirthPage from './pages/asha/ChildbirthPage.jsx'
+import MedicalQRPage from './pages/asha/MedicalQRPage.jsx'
+import PatientRecordPage from './pages/PatientRecordPage.jsx'
+import QrScannerPage from './pages/QrScannerPage.jsx'
 
 import THODashboardPage from './pages/tho/THODashboardPage.jsx'
 import THOMapPage from './pages/tho/THOMapPage.jsx'
@@ -21,6 +24,8 @@ import THOAnalyticsPage from './pages/tho/THOAnalyticsPage.jsx'
 import LandingPage from './pages/landing/LandingPage.jsx'
 import RoleSelectionPage from './pages/landing/RoleSelectionPage.jsx'
 import UnderConstructionPage from './pages/landing/UnderConstructionPage.jsx'
+import OurWorkPage from './pages/landing/OurWorkPage.jsx'
+import ImpactPage from './pages/landing/ImpactPage.jsx'
 
 
 export default function App() {
@@ -32,13 +37,21 @@ export default function App() {
             <Routes>
               {/* Landing & Public */}
               <Route path="/" element={<LandingPage />} />
+              <Route path="/our-work" element={<OurWorkPage />} />
+              <Route path="/impact" element={<ImpactPage />} />
               <Route path="/roles" element={<RoleSelectionPage />} />
               <Route path="/under-construction" element={<UnderConstructionPage />} />
               <Route path="/login/tho" element={<THOLoginPage />} />
 
+              {/* Public — doctor scans QR to view patient history (no auth) */}
+              <Route path="/patient-record/:id" element={<PatientRecordPage />} />
+              <Route path="/patient-record" element={<PatientRecordPage />} />
+              <Route path="/scan" element={<QrScannerPage />} />
+
               {/* ASHA Portal */}
               <Route path="/home" element={<ProtectedRoute role="asha"><ASHADashboardPage /></ProtectedRoute>} />
               <Route path="/patient" element={<ProtectedRoute role="asha"><PatientFormPage /></ProtectedRoute>} />
+              <Route path="/medical-qr" element={<ProtectedRoute role="asha"><MedicalQRPage /></ProtectedRoute>} />
               <Route path="/isl" element={<ProtectedRoute role="asha"><ISLPage /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute role="asha"><ChatPage /></ProtectedRoute>} />
               <Route path="/childbirth" element={<ProtectedRoute role="asha"><ChildbirthPage /></ProtectedRoute>} />
