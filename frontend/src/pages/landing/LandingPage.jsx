@@ -1,395 +1,329 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../../components/landing/LoginRoleModal'
 import { apiFetch } from '../../lib/api'
 import { GUEST_REVIEWS } from '../../lib/guestDemoData'
-
 import logoSrc from '../../images/logo/logo.jpg'
-import img1 from '../../images/landing/hero1.jpg'
-import img2 from '../../images/landing/hero2.jpg'
+import heroImg from '../../images/landing/hero_asha.png'
+import aboutImg from '../../images/landing/about_tech.png'
+import communityImg from '../../images/landing/community.png'
 
-import sumitPic from '../../images/landing/sumit.jpg'
-
-const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
-const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
 const StarIcon = ({ filled }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#fbbf24" : "none"} stroke={filled ? "#fbbf24" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#fbbf24" : "none"} stroke={filled ? "#fbbf24" : "currentColor"} strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
 )
+
+function CountUp({ end, suffix = '', duration = 2000 }) {
+  const [count, setCount] = useState(0)
+  const ref = useRef(null)
+  const started = useRef(false)
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true
+        const step = end / (duration / 16)
+        let cur = 0
+        const id = setInterval(() => {
+          cur += step
+          if (cur >= end) { setCount(end); clearInterval(id) }
+          else setCount(Math.floor(cur))
+        }, 16)
+      }
+    }, { threshold: 0.3 })
+    if (ref.current) obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [end, duration])
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>
+}
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [reviews, setReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(true)
 
-  const heroImages = [img1, img2]
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentImageIndex(prev => (prev + 1) % heroImages.length)
-    }, 22800)
-    return () => clearInterval(timer)
+    setMounted(true)
+    const handleScroll = () => setIsScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    (async () => {
       try {
-        console.log("[LandingPage] Fetching reviews from API...")
-        const response = await apiFetch('/reviews/')
-        if (response.ok) {
-          const data = await response.json()
-          console.log(`[LandingPage] Successfully fetched ${data.length} reviews.`)
-          if (data && data.length > 0) {
-            setReviews(data)
-          } else {
-            console.log("[LandingPage] API returned empty reviews. Using fallback.")
-            setReviews(GUEST_REVIEWS)
-          }
-        } else {
-          console.warn(`[LandingPage] API failed with status ${response.status}. Using fallback.`)
-          setReviews(GUEST_REVIEWS)
-        }
-      } catch (error) {
-        console.error("[LandingPage] Failed to fetch reviews:", error)
-        setReviews(GUEST_REVIEWS)
-      } finally {
-        setReviewsLoading(false)
-      }
-    }
-    fetchReviews()
+        const res = await apiFetch('/reviews/')
+        if (res.ok) { const d = await res.json(); setReviews(d?.length ? d : GUEST_REVIEWS) }
+        else setReviews(GUEST_REVIEWS)
+      } catch { setReviews(GUEST_REVIEWS) }
+      finally { setReviewsLoading(false) }
+    })()
   }, [])
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          observer.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.15 })
-
-    document.querySelectorAll('.observe-anim:not(.is-visible)').forEach(el => observer.observe(el))
-
-    return () => observer.disconnect()
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('lp-visible'); obs.unobserve(e.target) } })
+    }, { threshold: 0.12 })
+    document.querySelectorAll('.lp-anim:not(.lp-visible)').forEach(el => obs.observe(el))
+    return () => obs.disconnect()
   }, [reviews, mounted])
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
-    setMounted(true)
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
+  const openLogin = () => setShowLoginModal(true)
 
   return (
-    <div className={`page-fade-in ${mounted ? 'is-mounted' : ''}`} style={{ minHeight: '100dvh', background: 'var(--surface)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', 'Noto Sans', sans-serif" }}>
+    <div className={`lp-root ${mounted ? 'lp-mounted' : ''}`}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+        .lp-root { opacity:0; transition:opacity .5s; font-family:'Inter',sans-serif; }
+        .lp-root.lp-mounted { opacity:1; }
+        .lp-anim { opacity:0; transform:translateY(40px); }
+        .lp-anim.lp-visible { opacity:1; transform:translateY(0); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+        .lp-anim.lp-d1 { transition-delay:.1s; }
+        .lp-anim.lp-d2 { transition-delay:.2s; }
+        .lp-anim.lp-d3 { transition-delay:.3s; }
+        .lp-anim.lp-d4 { transition-delay:.4s; }
+        .lp-anim.lp-d5 { transition-delay:.5s; }
+        .lp-hero { position:relative; min-height:100vh; display:flex; align-items:center; overflow:hidden; }
+        .lp-hero-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+        .lp-hero-overlay { position:absolute; inset:0; background:linear-gradient(135deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.4) 50%, rgba(0,0,0,.15) 100%); }
+        .lp-hero-content { position:relative; z-index:2; max-width:1300px; margin:0 auto; width:100%; padding:9rem 5% 5rem; }
+        .lp-hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.8rem,7vw,5rem); font-weight:800; color:#fff; line-height:1.08; letter-spacing:-.03em; margin:0 0 1.5rem; max-width:750px; text-shadow:0 4px 30px rgba(0,0,0,.4); }
+        .lp-hero h1 .accent { color:#f59e0b; }
+        .lp-hero .sub { font-size:clamp(1rem,2.5vw,1.25rem); color:rgba(255,255,255,.85); margin-bottom:2.5rem; max-width:550px; line-height:1.6; font-weight:400; }
+        .lp-cta-row { display:flex; gap:1rem; flex-wrap:wrap; }
+        .lp-btn-primary { padding:1rem 2.25rem; border-radius:12px; background:linear-gradient(135deg,#0d9488,#10b981); color:#fff; font-weight:700; font-size:1rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:10px; transition:all .25s; box-shadow:0 8px 28px rgba(16,185,129,.35); }
+        .lp-btn-primary:hover { transform:translateY(-3px); box-shadow:0 14px 36px rgba(16,185,129,.45); }
+        .lp-btn-outline { padding:1rem 2.25rem; border-radius:12px; background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border:1.5px solid rgba(255,255,255,.25); color:#fff; font-weight:600; font-size:1rem; cursor:pointer; display:inline-flex; align-items:center; gap:10px; transition:all .25s; }
+        .lp-btn-outline:hover { background:rgba(255,255,255,.15); transform:translateY(-2px); }
 
-      <nav
-        style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-          background: isScrolled ? '#080c16' : 'transparent',
-          boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,0.08)' : 'none',
-          transition: 'background 0.3s ease, box-shadow 0.3s ease',
-        }}
-        className="landing-nav"
-      >
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 800, fontSize: '1.65rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
-            <img src={logoSrc} alt="Nexus Health" width={44} height={44} style={{ borderRadius: 11, objectFit: 'cover', display: 'block' }} />
-            Nexus Health
-          </div>
+        /* Stats Banner */
+        .lp-stats { background:linear-gradient(135deg,#0f766e 0%,#065f46 100%); padding:4rem 5%; }
+        .lp-stats-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; text-align:center; }
+        .lp-stat-num { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); font-weight:800; color:#fff; }
+        .lp-stat-label { font-size:.875rem; color:rgba(255,255,255,.7); margin-top:.5rem; font-weight:500; }
 
-          <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }} className="hide-mobile">
-            <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>About Us</a>
-            <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Services</a>
-            <a href="#reviews" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Reviews</a>
-          </div>
+        /* About Section */
+        .lp-about { padding:7rem 5%; background:#fafaf8; }
+        .lp-about-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+        .lp-about-img { border-radius:24px; overflow:hidden; box-shadow:0 24px 48px rgba(0,0,0,.12); }
+        .lp-about-img img { width:100%; height:100%; object-fit:cover; display:block; }
+        .lp-about h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,2.75rem); font-weight:800; color:#1a1a1a; margin:0 0 1.5rem; letter-spacing:-.02em; }
+        .lp-about p { color:#555; font-size:1.0625rem; line-height:1.7; margin-bottom:2rem; }
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="landing-login-btn"
-              style={{ padding: '0.625rem 1.5rem', borderRadius: 99, border: '1.5px solid rgba(45,143,94,0.8)', background: 'transparent', color: '#ffffff', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(45,143,94,0.2)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-            >
-              Log in
-            </button>
+        /* Problem */
+        .lp-problem { padding:7rem 5%; background:#111; color:#fff; position:relative; overflow:hidden; }
+        .lp-problem-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+        .lp-problem h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,2.75rem); font-weight:800; margin:0 0 1.5rem; letter-spacing:-.02em; }
+        .lp-problem p { color:rgba(255,255,255,.7); font-size:1.0625rem; line-height:1.7; margin-bottom:2rem; }
+        .lp-problem-img { border-radius:24px; overflow:hidden; position:relative; }
+        .lp-problem-img img { width:100%; display:block; border-radius:24px; }
+
+        /* Features */
+        .lp-features { padding:7rem 5%; background:#fafaf8; }
+        .lp-features-header { text-align:center; max-width:700px; margin:0 auto 4rem; }
+        .lp-features-header .chip { display:inline-block; background:#e6f7f1; color:#0d9488; padding:6px 18px; border-radius:99px; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:1.5rem; }
+        .lp-features-header h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,2.75rem); font-weight:800; color:#1a1a1a; letter-spacing:-.02em; }
+        .lp-feat-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; }
+        .lp-feat-card { background:#fff; border-radius:24px; padding:2.5rem; border:1px solid #eee; transition:all .3s; position:relative; overflow:hidden; }
+        .lp-feat-card:hover { transform:translateY(-8px); box-shadow:0 20px 40px rgba(0,0,0,.08); border-color:#d1fae5; }
+        .lp-feat-icon { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem; font-size:1.5rem; }
+        .lp-feat-card h3 { font-size:1.25rem; font-weight:800; color:#1a1a1a; margin:0 0 .75rem; }
+        .lp-feat-card p { color:#666; font-size:.9375rem; line-height:1.6; margin:0; }
+
+        /* Tech Strip */
+        .lp-tech { padding:3rem 5%; background:#f3f4f6; text-align:center; }
+        .lp-tech-title { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#999; margin-bottom:1.5rem; }
+        .lp-tech-logos { display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; align-items:center; }
+        .lp-tech-logos span { font-size:1rem; font-weight:800; color:#bbb; letter-spacing:-.01em; }
+
+        /* Reviews */
+        .lp-reviews { padding:7rem 5%; background:#111; }
+        .lp-reviews-header { text-align:center; margin-bottom:4rem; }
+        .lp-reviews-header h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,2.75rem); font-weight:800; color:#fff; }
+        .lp-reviews-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:2rem; }
+        .lp-review-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:20px; padding:2rem; transition:all .3s; }
+        .lp-review-card:hover { background:rgba(255,255,255,.07); transform:translateY(-4px); }
+
+        /* Footer */
+        .lp-footer { background:#080c16; border-top:1px solid rgba(255,255,255,.08); padding:4rem 5% 2.5rem; color:#94a3b8; }
+        .lp-footer-inner { max-width:1200px; margin:0 auto; }
+
+        @media(max-width:900px) {
+          .lp-about-grid, .lp-problem-grid { grid-template-columns:1fr; }
+          .lp-stats-grid { grid-template-columns:repeat(2,1fr); }
+          .lp-feat-grid { grid-template-columns:1fr; }
+          .hide-m { display:none!important; }
+          .lp-hero h1 { font-size:2.5rem; }
+        }
+      `}</style>
+
+      {/* ─── NAV ─── */}
+      <nav style={{
+        position:'fixed', top:0, left:0, right:0, zIndex:100,
+        background: isScrolled ? 'rgba(8,12,22,.95)' : 'transparent',
+        backdropFilter: isScrolled ? 'blur(16px)' : 'none',
+        boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,.08)' : 'none',
+        transition:'all .3s',
+      }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.25rem 5%', maxWidth:1400, margin:'0 auto', width:'100%' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'.75rem', fontWeight:800, fontSize:'1.5rem', color:'#fff', letterSpacing:'-.02em' }}>
+            <img src={logoSrc} alt="Seva Setu" width={40} height={40} style={{ borderRadius:10, objectFit:'cover' }} />
+            Seva Setu
           </div>
+          <div style={{ display:'flex', gap:'2.5rem', fontSize:'.9rem', fontWeight:500, color:'rgba(255,255,255,.8)' }} className="hide-m">
+            <a href="#about" style={{ color:'inherit', textDecoration:'none' }}>About</a>
+            <a href="#problem" style={{ color:'inherit', textDecoration:'none' }}>Problem</a>
+            <a href="#features" style={{ color:'inherit', textDecoration:'none' }}>Features</a>
+            <a onClick={() => navigate('/our-work')} style={{ color:'inherit', textDecoration:'none', cursor:'pointer' }}>Our Work</a>
+            <a onClick={() => navigate('/impact')} style={{ color:'inherit', textDecoration:'none', cursor:'pointer' }}>Impact</a>
+          </div>
+          <button onClick={openLogin} className="lp-btn-primary" style={{ padding:'.65rem 1.5rem', fontSize:'.9rem' }}>
+            Get Started →
+          </button>
         </div>
       </nav>
 
-      <div style={{ position: 'relative', width: '100%', minHeight: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center' }} className="hero-section">
-        {[img1, img2].map((src, i) => (
-          <img
-            key={i}
-            src={src}
-            alt=""
-            style={{
-              position: 'absolute', top: 0, left: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'center',
-              opacity: currentImageIndex % 2 === i ? 1 : 0,
-              transition: 'opacity 1.5s ease-in-out',
-              zIndex: 0
-            }}
-          />
-        ))}
-
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 1,
-          background: 'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)'
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '8rem 5% 5rem' }} className="hero-left-content">
-          <h1
-            className="observe-anim animate-fade-up delay-150 hero-heading"
-            style={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
-          >
-            We are here to help<br />you stay healthy.
+      {/* ─── HERO ─── */}
+      <section className="lp-hero">
+        <img src={heroImg} alt="" className="lp-hero-img" />
+        <div className="lp-hero-overlay" />
+        <div className="lp-hero-content">
+          <h1 className="lp-anim lp-d1">
+            Delivering <span className="accent">Seva</span><br />to the Last Mile
           </h1>
+          <p className="sub lp-anim lp-d2">
+            AI-powered health triage for ASHA workers and Health Officers — bridging rural India's healthcare gap with intelligent digital infrastructure.
+          </p>
 
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="observe-anim animate-fade-up delay-300 hero-cta"
-            style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13,148,136,0.35)' }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-          >
-            Make an appointment
-          </button>
         </div>
-      </div>
+      </section>
 
-      <div id="goal" style={{ padding: '8rem 4%', background: '#0b0914', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 99, color: 'rgba(255,255,255,0.35)', fontSize: '11px', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              <span style={{ color: 'var(--primary)' }}>✦</span> What we offer
-            </span>
-            <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>Built for rural India</h2>
+      {/* ─── IMPACT STATS ─── */}
+      <section className="lp-stats">
+        <div className="lp-stats-grid">
+          {[
+            { num: 500, suffix:'+', label:'Emergency Cases Flagged' },
+            { num: 31, suffix:'', label:'Karnataka Districts Covered' },
+            { num: 3, suffix:'', label:'Languages Supported' },
+            { num: 2, suffix:'', label:'AI Models for Consensus' },
+          ].map((s,i) => (
+            <div key={i} className={`lp-anim lp-d${i+1}`}>
+              <div className="lp-stat-num"><CountUp end={s.num} suffix={s.suffix} /></div>
+              <div className="lp-stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── ABOUT ─── */}
+      <section id="about" className="lp-about">
+        <div className="lp-about-grid">
+          <div className="lp-about-img lp-anim">
+            <img src={aboutImg} alt="Seva Setu in action" />
           </div>
+          <div className="lp-anim lp-d2">
+            <h2>About Seva Setu</h2>
+            <p>
+              <strong>Seva Setu</strong> is an AI-driven digital health platform designed to empower India's 1 million+ ASHA workers with intelligent triage tools. Our dual-AI system uses <strong>Google Gemini</strong> and <strong>HuggingFace BART-MNLI</strong> in parallel to deliver reliable severity assessments — even in areas with limited connectivity.
+            </p>
+            <p>
+              We support <strong>multilingual voice input</strong> in Kannada, Hindi, and English, making it accessible to low-literacy health workers. Our real-time disease heatmap gives THO officers instant visibility into district-level health patterns.
+            </p>
+            <button onClick={openLogin} className="lp-btn-primary">Explore Platform →</button>
+          </div>
+        </div>
+      </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
-            {/* Card 1 */}
-            <div className="observe-anim animate-fade-up-card delay-c0" style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.classList.contains('is-visible') ? e.currentTarget.style.transform = 'none' : null}>
-              <div style={{ height: 240, position: 'relative', overflow: 'hidden', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                <div style={{ position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)', width: 250, height: 250, background: 'radial-gradient(circle, rgba(168,85,247,0.25) 0%, rgba(0,0,0,0) 70%)' }} />
-                <svg className="card-icon" viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
-                  <polyline points="0,60 40,60 55,30 75,90 90,60 130,60 140,45 155,60 200,60" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="75" cy="90" r="2.5" fill="#fff" filter="drop-shadow(0 0 6px #fff)" />
-                  <circle cx="55" cy="30" r="2" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
-                </svg>
+      {/* ─── PROBLEM ─── */}
+      <section id="problem" className="lp-problem">
+        <div style={{ position:'absolute', top:'10%', right:'-10%', width:'50%', height:'80%', background:'radial-gradient(circle, rgba(16,185,129,.08) 0%, transparent 70%)' }} />
+        <div className="lp-problem-grid">
+          <div className="lp-anim">
+            <h2>The Problem We Solve</h2>
+            <p>
+              <strong style={{color:'#fff'}}>ASHA workers like Bharti spend 50+ hours every month</strong> recording services on 10 registers and 5 mobile apps. Across India, they collectively spend 50M hours monthly feeding data into 50 portals.
+            </p>
+            <p>
+              Misdiagnosis at the village level leads to delayed referrals. A child with pneumonia might be triaged as "common cold" — losing critical golden hours. <strong style={{color:'#f87171'}}>Every minute of delay can cost a life.</strong>
+            </p>
+            <div style={{ display:'flex', gap:'1.5rem', flexWrap:'wrap', marginTop:'1rem' }}>
+              <div style={{ background:'rgba(239,68,68,.12)', border:'1px solid rgba(239,68,68,.25)', borderRadius:16, padding:'1.25rem 1.5rem', flex:1, minWidth:140 }}>
+                <div style={{ fontSize:'1.75rem', fontWeight:800, color:'#f87171' }}>50M</div>
+                <div style={{ fontSize:'.8rem', color:'rgba(255,255,255,.6)', marginTop:4 }}>hours wasted monthly on paper registers</div>
               </div>
-              <div style={{ padding: '0 2.5rem' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem', lineHeight: 1.2, letterSpacing: '-0.02em' }}>Delivering seamless<br />experiences</h3>
-                <p style={{ color: '#94a3b8', fontSize: '1.0625rem', lineHeight: 1.6 }}>Make it easy and comfortable just for you.</p>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="observe-anim animate-fade-up-card delay-c200" style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.classList.contains('is-visible') ? e.currentTarget.style.transform = 'none' : null}>
-              <div style={{ height: 240, position: 'relative', overflow: 'hidden', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                <div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: 200, height: 200, background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, rgba(0,0,0,0) 70%)' }} />
-                <svg className="card-icon" viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
-                  <path d="M 20,20 Q 60,80 100,50 T 180,80" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-                  <circle cx="100" cy="50" r="3" fill="#fff" filter="drop-shadow(0 0 6px #fff)" />
-                </svg>
-              </div>
-              <div style={{ padding: '0 2.5rem' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem', lineHeight: 1.2, letterSpacing: '-0.02em' }}>Orchestrating<br />unified frameworks</h3>
-                <p style={{ color: '#94a3b8', fontSize: '1.0625rem', lineHeight: 1.6 }}>Unifying people and technology across Odisha.</p>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="observe-anim animate-fade-up-card delay-c400" style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.classList.contains('is-visible') ? e.currentTarget.style.transform = 'none' : null}>
-              <div style={{ height: 240, position: 'relative', overflow: 'hidden', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                <div style={{ position: 'absolute', top: '20%', right: '10%', width: 200, height: 200, background: 'radial-gradient(circle, rgba(236,72,153,0.2) 0%, rgba(0,0,0,0) 70%)' }} />
-                <svg className="card-icon" viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
-                  <circle cx="100" cy="50" r="25" stroke="rgba(255,255,255,0.25)" strokeWidth="1" strokeDasharray="4 4" />
-                  <path d="M 94,35 h 12 v 10 h 10 v 10 h -10 v 10 h -12 v -10 h -10 v -10 h 10 z" fill="#fff" filter="drop-shadow(0 0 8px #fff)" opacity="0.9" />
-                </svg>
-              </div>
-              <div style={{ padding: '0 2.5rem' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem', lineHeight: 1.2, letterSpacing: '-0.02em' }}>Compounding<br />partnership gains</h3>
-                <p style={{ color: '#94a3b8', fontSize: '1.0625rem', lineHeight: 1.6 }}>Do good for people. We serve with heart to impact what matters most.</p>
+              <div style={{ background:'rgba(251,191,36,.12)', border:'1px solid rgba(251,191,36,.25)', borderRadius:16, padding:'1.25rem 1.5rem', flex:1, minWidth:140 }}>
+                <div style={{ fontSize:'1.75rem', fontWeight:800, color:'#fbbf24' }}>10+</div>
+                <div style={{ fontSize:'.8rem', color:'rgba(255,255,255,.6)', marginTop:4 }}>registers per ASHA worker</div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div id="about" style={{ padding: '8rem 4%', background: '#ffffff', position: 'relative' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 700, color: '#111827', letterSpacing: '-0.03em' }}>Meet the founder</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
-            {[
-              { src: sumitPic, name: 'Sumit Das', role: 'Open Source Developer | AI + Cybersecurity Builder', bio: 'Specializing in AI engineering and system architecture, Sumit built this platform to bring advanced healthcare solutions to remote areas.', quote: `"Bridging the healthcare gap in rural India with intelligent digital infrastructure."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' }
-            ].map(({ src, name, role, bio, quote, grad }, index) => (
-              <div
-                key={name}
-                className="observe-anim animate-fade-up"
-                style={{
-                  background: '#fff',
-                  borderRadius: 24,
-                  overflow: 'hidden',
-                  border: '1px solid rgba(0,0,0,0.06)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
-                  transitionDelay: `${index * 150}ms`
-                }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                  <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={name} />
-                </div>
-                <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                  <h3 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111827', marginBottom: 4 }}>{name}</h3>
-                  <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 400, marginBottom: '1rem' }}>{role}</p>
-                  <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6, fontWeight: 400 }}>{bio}</p>
-                </div>
-                <div style={{ padding: '2rem 2.5rem', background: grad, color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', color: '#f1f5f9', fontWeight: 400, margin: 0 }}>{quote}</p>
-                </div>
-              </div>
-            ))}
+          <div className="lp-problem-img lp-anim lp-d2">
+            <img src={communityImg} alt="Rural health camp" />
           </div>
         </div>
-      </div>
+      </section>
 
-      <div id="reviews" style={{ padding: '8rem 4%', background: '#0b0914', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '20%', left: '-10%', width: '40%', height: '60%', background: 'radial-gradient(circle, rgba(45,143,94,0.1) 0%, transparent 70%)', zIndex: 1 }} />
-        <div style={{ position: 'absolute', bottom: '10%', right: '-5%', width: '30%', height: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', zIndex: 1 }} />
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 99, color: 'rgba(255,255,255,0.35)', fontSize: '11px', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2rem' }}>
-              <span style={{ color: 'var(--primary)' }}>★</span> Wall of Love
-            </span>
-            <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>Voices from the Field</h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '2rem' }}>
-            {reviewsLoading ? (
-               <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
-                 <div className="spinner" style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--primary)', borderRadius: '50%', margin: '0 auto', animation: 'spin 1s linear infinite' }} />
-                 <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>Fetching newest reviews...</p>
-                 <style>{`
-                   @keyframes spin { to { transform: rotate(360deg); } }
-                 `}</style>
-               </div>
-            ) : reviews.length > 0 ? (
-              reviews.map((review, i) => (
-                <div
-                  key={review.id || i}
-                  className="observe-anim animate-fade-up"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    borderRadius: 24,
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    padding: '2.5rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1.5rem',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-                  }}
-                >
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    {[...Array(5)].map((_, idx) => (
-                      <StarIcon key={idx} filled={idx < (review.overall || 5)} />
-                    ))}
-                  </div>
-
-                  <p style={{ color: '#ffffff', fontSize: '1.0625rem', lineHeight: 1.6, flex: 1, fontStyle: 'italic' }}>
-                    "{review.comment}"
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, var(--primary) 0%, #6366f1 100%)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.25rem', fontWeight: 700, color: '#fff',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                    }}>
-                      {(review.userName || 'U')[0]}
-                    </div>
-                    <div>
-                      <h4 style={{ color: '#fff', margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{review.userName || 'Anonymous'}</h4>
-                      <p style={{ color: 'rgba(255, 255, 255, 0.4)', margin: 0, fontSize: '0.875rem' }}>
-                        {review.designation || (review.role === 'asha' ? 'ASHA Worker' : 'Medical Officer')}
-                        {review.location ? ` • ${review.location}` : ''}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'rgba(255,255,255,0.4)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 24 }}>
-                No reviews yet. Be the first to share your experience!
-              </div>
-            )}
-          </div>
+      {/* ─── FEATURES ─── */}
+      <section id="features" className="lp-features">
+        <div className="lp-features-header">
+          <div className="chip lp-anim">✦ Our Approach</div>
+          <h2 className="lp-anim lp-d1">How Seva Setu Works</h2>
         </div>
-      </div>
-
-      <footer style={{ background: '#080c16', borderTop: '1px solid rgba(255,255,255,0.1)', padding: '60px 4% 40px', color: '#94a3b8' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '4rem', marginBottom: '4rem' }}>
-          <div style={{ flex: '2 1 300px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700, fontSize: '1.5rem', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>
-              Nexus Health
+        <div className="lp-feat-grid">
+          {[
+            { icon:'🤖', bg:'#e0f2fe', title:'Dual-AI Triage', desc:'Gemini and HuggingFace run in parallel for consensus-based severity assessment. If both agree it\'s an emergency, you can trust the result.' },
+            { icon:'🗣️', bg:'#fef3c7', title:'Voice-to-Text', desc:'ASHA workers speak symptoms in Kannada, Hindi, or English. Our AI transcribes, translates, and triages — no typing needed.' },
+            { icon:'🗺️', bg:'#d1fae5', title:'Disease Heatmap', desc:'Real-time district-level visualization with severity-coded circles. Auto-detects outbreak clusters when cases spike in a tehsil.' },
+            { icon:'🩺', bg:'#ede9fe', title:'Sickle Cell Screening', desc:'Automatic risk flagging for high-prevalence districts like Yadgir, Raichur, and Bellary in northern Karnataka.' },
+            { icon:'🤟', bg:'#fce7f3', title:'Sign Language Mode', desc:'Indian Sign Language (ISL) interface for deaf and hard-of-hearing patients — true healthcare accessibility.' },
+            { icon:'⚡', bg:'#fee2e2', title:'Real-Time Sync', desc:'ASHA worker adds a patient → THO officer sees it instantly on their dashboard, sorted by emergency priority.' },
+          ].map((f,i) => (
+            <div key={i} className={`lp-feat-card lp-anim lp-d${(i%3)+1}`}>
+              <div className="lp-feat-icon" style={{ background:f.bg }}>{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
             </div>
-            <p style={{ lineHeight: 1.6, marginBottom: '2rem', maxWidth: 300, color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400 }}>Bridging the healthcare gap in rural India with intelligent digital infrastructure.</p>
-          </div>
+          ))}
         </div>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px', fontSize: '13px', color: 'rgba(255,255,255,0.4)', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>© 2026 Nexus Health.</div>
-          <div>Designed for Rural Health.</div>
+      </section>
+
+      {/* ─── TECH STRIP ─── */}
+      <section className="lp-tech">
+        <div className="lp-tech-title">Built With</div>
+        <div className="lp-tech-logos">
+          {['Google Gemini', 'HuggingFace', 'React', 'FastAPI', 'Google Maps', 'Web Speech API'].map(t => (
+            <span key={t}>{t}</span>
+          ))}
+        </div>
+      </section>
+
+
+
+
+      {/* ─── FOOTER ─── */}
+      <footer className="lp-footer">
+        <div className="lp-footer-inner">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'2rem', marginBottom:'2rem' }}>
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:'.75rem', fontWeight:800, fontSize:'1.5rem', color:'#fff', marginBottom:'.75rem' }}>
+                <img src={logoSrc} alt="" width={36} height={36} style={{ borderRadius:9 }} />
+                Seva Setu
+              </div>
+              <p style={{ maxWidth:350, fontSize:'.875rem', lineHeight:1.6, color:'rgba(255,255,255,.5)' }}>
+                Bridging the healthcare gap in rural India with AI-powered triage intelligence.
+              </p>
+            </div>
+            <button onClick={openLogin} className="lp-btn-primary">Get Started →</button>
+          </div>
+          <div style={{ borderTop:'1px solid rgba(255,255,255,.08)', paddingTop:'1.5rem', display:'flex', justifyContent:'space-between', fontSize:'.8rem', color:'rgba(255,255,255,.35)', flexWrap:'wrap', gap:'1rem' }}>
+            <div>© 2026 Seva Setu — Built at Scaler Hackathon</div>
+            <div>Designed for Rural Health. Powered by Dual-AI.</div>
+          </div>
         </div>
       </footer>
 
       {showLoginModal && <LoginRoleModal onClose={() => setShowLoginModal(false)} />}
-
-      <style>{`
-        .page-fade-in { opacity: 0; transition: opacity 400ms ease; }
-        .page-fade-in.is-mounted { opacity: 1; }
-        .animate-fade-up { opacity: 0; transform: translateY(48px); will-change: opacity, transform; }
-        .animate-fade-up.is-visible { opacity: 1; transform: translateY(0); transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1); }
-        .hero-heading { font-size: clamp(2.5rem, 8vw, 4.5rem); }
-        @media (max-width: 900px) { .hide-mobile { display: none !important; } }
-      `}</style>
     </div>
   )
 }
