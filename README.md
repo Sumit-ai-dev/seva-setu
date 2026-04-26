@@ -1,4 +1,4 @@
-# 🏥 Nexus Health — AI-Powered Rural Healthcare Platform
+# 🏥  AI-Powered Rural Healthcare Platform
 
 <div align="center">
 
@@ -13,7 +13,7 @@
 
 **Built for GDG Bengaluru Hackathon 2026**
 
-*Solving UN SDG 3 (Good Health) and SDG 10 (Reduced Inequalities)*
+*Solving UN SDG 3 (Good Health) *
 
 </div>
 
@@ -32,13 +32,13 @@ India has **1 million ASHA workers** — the backbone of rural healthcare. They 
 
 ---
 
-## 💡 The Solution: Nexus Health
+## 💡 The Solution:Health
 
 Nexus Health is a **Gemini-native, offline-first Progressive Web App** that puts AI-powered triage into the hands of every ASHA worker — regardless of internet connectivity.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    NEXUS HEALTH ARCHITECTURE            │
+│                     HEALTH ARCHITECTURE                 │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  📱 ASHA Worker (Android PWA)                           │
