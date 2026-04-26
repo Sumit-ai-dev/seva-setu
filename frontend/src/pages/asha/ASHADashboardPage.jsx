@@ -421,7 +421,7 @@ export default function ASHADashboardPage() {
         <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* ── Inline Review Section ── */}
-          <ReviewSection role="asha" isDark={isDark} />
+          
 
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="hp-chip" onClick={() => setActiveTab('ALL')} style={{

@@ -7,6 +7,7 @@ import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import SignLanguageModal from '../../components/asha/SignLanguageModal.jsx'
 import AIMedicalAdviceCard from '../../components/asha/AIMedicalAdviceCard.jsx'
 import { apiFetch } from '../../lib/api'
+import { pushTriageRecord } from '../../lib/triageStore'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
@@ -299,20 +300,20 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
   async function saveRecord(patientId, patientObj, triaged) {
     setSaving(true)
+    const payload = {
+      patient_id:       patientId,
+      patient_name:     patientObj.name,
+      tehsil:           patientObj.tehsil,
+      district:         patientObj.district,
+      severity:         triaged.severity,
+      symptoms:         triaged.symptoms,
+      sickle_cell_risk: triaged.sickle_cell_risk || false,
+      brief:            triaged.brief,
+      latitude:         patientObj.latitude || null,
+      longitude:        patientObj.longitude || null,
+    }
     try {
       const token = localStorage.getItem('access_token')
-      const payload = {
-        patient_id:       patientId,
-        patient_name:     patientObj.name,
-        tehsil:           patientObj.tehsil,
-        district:         patientObj.district,
-        severity:         triaged.severity,
-        symptoms:         triaged.symptoms,
-        sickle_cell_risk: triaged.sickle_cell_risk || false,
-        brief:            triaged.brief,
-        latitude:         patientObj.latitude || null,
-        longitude:        patientObj.longitude || null,
-      }
       const res = await apiFetch('/triage_records/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -325,6 +326,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     } catch (err) {
       setSaveError('Record could not be saved: ' + (err.message || ''))
     } finally {
+      // Always push to shared localStorage store so THO dashboard gets it instantly
+      pushTriageRecord({
+        ...payload,
+        age: patientObj.age,
+        gender: patientObj.gender,
+      })
       setSaving(false)
     }
   }
@@ -351,14 +358,22 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     }
 
     if (!resolvedPatientId) {
-      const token = localStorage.getItem('access_token')
-      const res = await apiFetch('/patients/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      setSaving(true) // Disable button while checking duplicates
       let existing = []
-      if (res.ok) {
-        const data = await res.json()
-        existing = data.filter(p => p.name.toLowerCase() === form.name.trim().toLowerCase() && p.district === form.district && p.age === parseInt(form.age, 10)).slice(0, 5)
+      try {
+        const token = localStorage.getItem('access_token')
+        const res = await apiFetch('/patients/', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          existing = data.filter(p => p.name.toLowerCase() === form.name.trim().toLowerCase() && p.district === form.district && p.age === parseInt(form.age, 10)).slice(0, 5)
+        }
+      } catch (err) {
+        console.error("Duplicate check failed:", err)
+        // We don't block triage if duplicate check fails, just proceed as a new patient
+      } finally {
+        setSaving(false)
       }
 
       const matches = existing || []

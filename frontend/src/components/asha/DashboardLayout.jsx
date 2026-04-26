@@ -22,6 +22,19 @@ const ChatIcon = ({ active }) => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 )
+const QRIcon = ({ active }) => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <line x1="14" y1="14" x2="14" y2="17" />
+    <line x1="17" y1="14" x2="17" y2="14.01" />
+    <line x1="20" y1="14" x2="20" y2="17" />
+    <line x1="14" y1="20" x2="14" y2="20.01" />
+    <line x1="17" y1="17" x2="17" y2="20" />
+    <line x1="20" y1="20" x2="20" y2="20.01" />
+  </svg>
+)
 const SearchIcon = () => (
   <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -60,6 +73,7 @@ const MoonIcon = () => (
 const NAV_ITEMS = [
   { id: 'home', label: 'Dashboard', Icon: GridIcon, path: '/home' },
   { id: 'patient', label: 'New Patient', Icon: PatientIcon, path: '/patient' },
+  { id: 'medical-qr', label: 'Medical QR', Icon: QRIcon, path: '/medical-qr' },
   { id: 'chat', label: 'AI Chat', Icon: ChatIcon, path: '/chat' },
 ]
 
@@ -146,7 +160,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <img
                 src={logoSrc}
-                alt="Nexus Health"
+                alt="Seva Setu"
                 style={{
                   width: 40, height: 40, borderRadius: 16, flexShrink: 0,
                   objectFit: 'cover', display: 'block',
@@ -154,7 +168,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
                 }}
               />
               <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Nexus Health</div>
+                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Seva Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
               </div>
             </div>

@@ -52,7 +52,7 @@ export default function GlobalHeader({ children, rightSide }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: '0.75rem' }}>
           <button onClick={() => navigate('/home')} style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', flexShrink: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 'clamp(1rem, 4vw, 1.25rem)', color: 'var(--primary)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>Nexus Health</div>
+            <div style={{ fontWeight: 800, fontSize: 'clamp(1rem, 4vw, 1.25rem)', color: 'var(--primary)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>Seva Setu</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: "'Noto Sans Devanagari', sans-serif" }} className="hide-mobile">आरोग्य सेतू</div>
           </button>
           

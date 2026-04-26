@@ -86,7 +86,13 @@ export default function THOAshaWorkersPage() {
           return matchesLocation || (triageRecords.indexOf(r) % ashaWorkers.length === index);
         }
         return r.user_id === asha.id
-      }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+      }).sort((a,b) => {
+        const sevOrder = { red: 0, yellow: 1, green: 2 }
+        const aRank = sevOrder[a.severity] ?? 2
+        const bRank = sevOrder[b.severity] ?? 2
+        if (aRank !== bRank) return aRank - bRank
+        return new Date(b.created_at) - new Date(a.created_at)
+      })
 
       return {
         ...asha,
@@ -95,7 +101,7 @@ export default function THOAshaWorkersPage() {
         pendingCount: records.filter(x => !x.reviewed).length,
         totalCases: records.length
       }
-    }).sort((a, b) => b.totalCases - a.totalCases)
+    }).sort((a, b) => b.criticalCount - a.criticalCount || b.totalCases - a.totalCases)
   }, [ashaWorkers, triageRecords])
 
   const selectedAshaDetails = useMemo(() => {

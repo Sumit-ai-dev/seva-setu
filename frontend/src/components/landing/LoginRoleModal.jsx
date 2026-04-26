@@ -76,7 +76,7 @@ function HealthIllustration({ selectedRole }) {
         zIndex: 2,
       }}>
         <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
-          Nexus Health · स्वास्थ्य सेतु
+          Seva Setu · ಸೇವಾ ಸೇತು
         </div>
       </div>
     </div>
@@ -653,7 +653,7 @@ export default function LoginRoleModal({ onClose }) {
               fontFamily: 'Inter, sans-serif',
             }}>
               Authorised personnel only ·{' '}
-              <span style={{ color: '#0F6E56', fontWeight: 600 }}>स्वास्थ्य सेतु</span>
+              <span style={{ color: '#0F6E56', fontWeight: 600 }}>Seva Setu</span>
             </p>
           </div>
         </div>

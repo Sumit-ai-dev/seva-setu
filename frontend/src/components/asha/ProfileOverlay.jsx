@@ -394,7 +394,13 @@ export default function ProfileOverlay({ onClose }) {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: 340, overflowY: 'auto', paddingRight: '0.5rem' }}>
-                  {history.map(record => {
+                  {[...history].sort((a, b) => {
+                    const sevOrder = { red: 0, yellow: 1, green: 2 }
+                    const aRank = sevOrder[a.severity] ?? 2
+                    const bRank = sevOrder[b.severity] ?? 2
+                    if (aRank !== bRank) return aRank - bRank
+                    return new Date(b.created_at) - new Date(a.created_at)
+                  }).map(record => {
                     const date = new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 
                     let sevColor = '#34d399'; let sevBg = 'rgba(52, 211, 153, 0.1)'; let borderCol = 'rgba(52, 211, 153, 0.2)';

@@ -128,7 +128,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
                 Thank you!
               </h2>
               <p style={{ color: '#6b7280', fontSize: '0.9rem', margin: 0 }}>
-                Your feedback helps us improve Nexus Health for every ASHA worker and officer.
+                Your feedback helps us improve Seva Setu for every ASHA worker and officer.
               </p>
             </div>
           ) : (
@@ -383,7 +383,7 @@ export function ReviewSection({ role, isDark }) {
                 Rate Your Experience ⭐
               </h3>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: muteColor }}>
-                Help us improve Nexus Health — your feedback matters
+                Help us improve Seva Setu — your feedback matters
               </p>
             </div>
             <span style={{

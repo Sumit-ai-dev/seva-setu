@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps'
 
 function getSeverityColor(point) {
   if (point.critical > 0) return '#ef4444' // Red
@@ -36,21 +36,39 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
           disableDefaultUI={false}
           gestureHandling="greedy"
         >
-          {/* Patient Triage Points */}
+          {/* Patient Triage Points — Circle markers */}
           {points.map((pt, i) => {
-            const size = Math.max(1.2, Math.min(2.5, pt.total * 0.2))
+            const baseSize = Math.max(20, Math.min(48, 14 + pt.total * 4))
+            const color = getSeverityColor(pt)
             return (
               <AdvancedMarker
                 key={`patient-${i}`}
                 position={{ lat: pt.lat, lng: pt.lng }}
                 onClick={() => setActiveMarker(`patient-${i}`)}
               >
-                <Pin
-                  background={getSeverityColor(pt)}
-                  borderColor="#ffffff"
-                  glyphColor="#ffffff"
-                  scale={size}
-                />
+                <div
+                  style={{
+                    width: baseSize,
+                    height: baseSize,
+                    borderRadius: '50%',
+                    background: color,
+                    border: '3px solid #ffffff',
+                    boxShadow: `0 0 8px ${color}88, 0 2px 6px rgba(0,0,0,0.3)`,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: baseSize > 30 ? '0.75rem' : '0.6rem',
+                    transition: 'transform 0.15s ease',
+                  }}
+                  title={`${pt.village} — ${pt.total} cases`}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.25)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {pt.total}
+                </div>
                 
                 {activeMarker === `patient-${i}` && (
                   <InfoWindow
@@ -75,19 +93,35 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
             )
           })}
 
-          {/* Disease Outbreak Points */}
+          {/* Disease Outbreak Points — Purple circle markers */}
           {outbreaks.filter(o => o.latitude && o.longitude).map((o, i) => (
             <AdvancedMarker
               key={`outbreak-${o.id}`}
               position={{ lat: o.latitude, lng: o.longitude }}
               onClick={() => setActiveMarker(`outbreak-${o.id}`)}
             >
-              <Pin
-                background="#8b5cf6" // Purple
-                borderColor="#ffffff"
-                glyphColor="#ffffff"
-                scale={1.5}
-              />
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: '#8b5cf6',
+                  border: '3px solid #ffffff',
+                  boxShadow: '0 0 12px rgba(139,92,246,0.5), 0 2px 6px rgba(0,0,0,0.3)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '0.85rem',
+                  transition: 'transform 0.15s ease',
+                }}
+                title={`Outbreak: ${o.disease || o.disease_illness_name}`}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.25)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                ⚠
+              </div>
 
               {activeMarker === `outbreak-${o.id}` && (
                 <InfoWindow
@@ -124,3 +158,4 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
     </div>
   )
 }
+

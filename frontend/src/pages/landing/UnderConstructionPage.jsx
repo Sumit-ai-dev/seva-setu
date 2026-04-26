@@ -135,7 +135,7 @@ export default function UnderConstructionPage() {
       </div>
 
       <p style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.25)', fontSize: '0.8125rem', position: 'relative', zIndex: 1 }}>
-        Nexus Health · Bridging healthcare in rural India
+        Seva Setu · Bridging healthcare in rural Karnataka
       </p>
 
       <style>{`

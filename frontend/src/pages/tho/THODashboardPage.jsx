@@ -8,6 +8,7 @@ const SearchIcon   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill=
 const ActivityIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
 import { apiFetch, API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
+import { getLiveTriageRecords } from '../../lib/triageStore'
 import { ReviewSection } from '../../components/common/ReviewModal'
 
 
@@ -75,7 +76,7 @@ export default function THODashboardPage() {
   const [triageRecords, setTriageRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(null)
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
+  const [sortConfig, setSortConfig] = useState({ key: 'severity', direction: 'desc' })
   const [selectedRecord, setSelectedRecord] = useState(null)
 
   const handleSort = useCallback((key) => {
@@ -102,21 +103,54 @@ export default function THODashboardPage() {
     try {
       const token = localStorage.getItem('access_token')
 
-      // -- Guest mode: use demo data directly --
+      // -- Guest mode: use demo data + live ASHA submissions --
       if (!token) {
-        setTriageRecords(GUEST_TRIAGE_RECORDS)
+        const liveRecords = getLiveTriageRecords()
+        // Merge demo data with live ASHA submissions, dedup by id
+        const allRecords = [...liveRecords, ...GUEST_TRIAGE_RECORDS]
+        const seen = new Set()
+        const deduped = allRecords.filter(r => {
+          if (seen.has(r.id)) return false
+          seen.add(r.id)
+          return true
+        })
+        setTriageRecords(deduped)
         setLoading(false)
         return
       }
 
       const headers = { 'Authorization': `Bearer ${token}` }
       const res = await apiFetch(`${API}/triage_records/`, { headers })
-      if (res.ok) setTriageRecords(await res.json())
+      if (res.ok) {
+        const apiRecords = await res.json()
+        // Also merge any live localStorage records
+        const liveRecords = getLiveTriageRecords()
+        const allRecords = [...liveRecords, ...apiRecords]
+        const seen = new Set()
+        const deduped = allRecords.filter(r => {
+          if (seen.has(r.id)) return false
+          seen.add(r.id)
+          return true
+        })
+        setTriageRecords(deduped)
+      }
     } catch (err) { console.error('Fetch error:', err) }
     finally { setLoading(false) }
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  // Real-time sync: listen for ASHA worker triage submissions
+  useEffect(() => {
+    const handleTriageUpdate = () => fetchData()
+    window.addEventListener('seva-setu-triage-update', handleTriageUpdate)
+    // Also poll every 5 seconds for cross-tab updates
+    const interval = setInterval(fetchData, 5000)
+    return () => {
+      window.removeEventListener('seva-setu-triage-update', handleTriageUpdate)
+      clearInterval(interval)
+    }
+  }, [fetchData])
 
   const stats = useMemo(() => ({
     unreviewed: triageRecords.filter(r => !r.reviewed).length,
@@ -197,7 +231,7 @@ export default function THODashboardPage() {
       `}</style>
 
       <div style={{ padding: '2rem' }}>
-          <ReviewSection role="dmo" isDark={isDark} />
+          
           
           <div className="tho-main-grid">
             <div className="tho-content-col">

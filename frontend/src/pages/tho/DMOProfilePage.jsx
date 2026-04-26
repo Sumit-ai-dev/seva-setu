@@ -150,7 +150,7 @@ export default function DMOProfilePage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ef4444', marginBottom: 4 }}>Account Session</div>
-                  <div style={{ fontSize: '0.85rem', color: g.muted }}>Security managed by Nexus Health Authentication</div>
+                  <div style={{ fontSize: '0.85rem', color: g.muted }}>Security managed by Seva Setu Authentication</div>
                 </div>
                 
                 <button

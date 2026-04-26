@@ -5,7 +5,7 @@ export default function LogoIcon({ size = 52, style = {} }) {
   return (
     <img
       src={logoSrc}
-      alt="Nexus Health"
+      alt="Seva Setu"
       width={size}
       height={size}
       style={{ borderRadius: 18, objectFit: 'cover', display: 'block', ...style }}

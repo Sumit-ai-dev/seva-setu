@@ -65,10 +65,10 @@ export default function RoleSelectionPage() {
           <LogoIcon />
         </div>
         <h1 style={{ color: 'var(--color-primary)', fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-          Nexus Health
+          Seva Setu
         </h1>
         <div style={{ color: 'var(--color-text-muted)', fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>
-          आरोग्य सेतु
+          ಸೇವಾ ಸೇತು
         </div>
       </div>
 

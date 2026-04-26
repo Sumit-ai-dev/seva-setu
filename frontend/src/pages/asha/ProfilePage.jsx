@@ -290,7 +290,13 @@ export default function ProfilePage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {history.map((record, i) => {
+                          {[...history].sort((a, b) => {
+                            const sevOrder = { red: 0, yellow: 1, green: 2 }
+                            const aRank = sevOrder[a.severity] ?? 2
+                            const bRank = sevOrder[b.severity] ?? 2
+                            if (aRank !== bRank) return aRank - bRank
+                            return new Date(b.created_at) - new Date(a.created_at)
+                          }).map((record, i) => {
                             const cfg = sevConfig[record.severity] || sevConfig.green
                             const date = new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                             return (

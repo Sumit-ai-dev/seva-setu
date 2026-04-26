@@ -156,9 +156,9 @@ export default function THOLayout({ children, onLogout, topbarContent, contentSt
           {/* Brand header */}
           <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <img src={logoSrc} alt="Nexus Health" width={40} height={40} style={{ borderRadius: 16, objectFit: 'cover', flexShrink: 0, display: 'block' }} />
+              <img src={logoSrc} alt="Seva Setu" width={40} height={40} style={{ borderRadius: 16, objectFit: 'cover', flexShrink: 0, display: 'block' }} />
               <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Nexus Health</div>
+                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Seva Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#3b82f6', letterSpacing: '0.09em', textTransform: 'uppercase' }}>THO Dashboard</div>
               </div>
             </div>
