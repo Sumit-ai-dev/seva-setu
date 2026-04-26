@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import THOLayout from '../../components/tho/THOSidebar'
 import { apiFetch, API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
+import { getOutbreaks as getLocalOutbreaks } from '../../lib/outbreakStore'
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
@@ -32,6 +33,8 @@ export default function THOMapPage() {
       const token = localStorage.getItem('access_token')
       if (!token) {
         setTriageRecords(GUEST_TRIAGE_RECORDS)
+        // Still load localStorage outbreaks in guest mode
+        setOutbreaks(getLocalOutbreaks())
         setLoading(false)
         return
       }
@@ -41,22 +44,87 @@ export default function THOMapPage() {
         apiFetch(`${API}/outbreaks/`, { headers }),
       ])
       if (triRes.status === 'fulfilled' && triRes.value.ok) setTriageRecords(await triRes.value.json())
-      if (outRes.status === 'fulfilled' && outRes.value.ok) setOutbreaks(await outRes.value.json())
+      
+      // Merge API outbreaks with localStorage outbreaks
+      let apiOutbreaks = []
+      if (outRes.status === 'fulfilled' && outRes.value.ok) apiOutbreaks = await outRes.value.json()
+      const localOutbreaks = getLocalOutbreaks()
+      const merged = [...apiOutbreaks]
+      localOutbreaks.forEach(lo => {
+        const exists = merged.some(ao => ao.district === lo.district && ao.disease === lo.disease)
+        if (!exists) merged.push(lo)
+      })
+      setOutbreaks(merged)
     } catch (err) { console.error('Fetch error:', err) }
     finally { setLoading(false) }
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  // Poll outbreaks every 30 seconds for live sync
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (token) {
+          const res = await apiFetch(`${API}/outbreaks/`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          })
+          if (res.ok) {
+            const apiOutbreaks = await res.json()
+            // Merge localStorage outbreaks (for instant sync before API write)
+            const localOutbreaks = getLocalOutbreaks()
+            const merged = [...apiOutbreaks]
+            // Add local outbreaks that aren't in the API response yet
+            localOutbreaks.forEach(lo => {
+              const exists = merged.some(ao =>
+                ao.district === lo.district && ao.disease === lo.disease
+              )
+              if (!exists) merged.push(lo)
+            })
+            setOutbreaks(merged)
+          }
+        } else {
+          // Guest mode: just read from localStorage
+          setOutbreaks(getLocalOutbreaks())
+        }
+      } catch (err) {
+        console.error('Outbreak poll error:', err)
+      }
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Also listen for instant localStorage pushes from the same browser
+  useEffect(() => {
+    function handleOutbreakUpdate() {
+      const localOutbreaks = getLocalOutbreaks()
+      setOutbreaks(prev => {
+        const merged = [...prev]
+        localOutbreaks.forEach(lo => {
+          const exists = merged.some(ao =>
+            ao.district === lo.district && ao.disease === lo.disease
+          )
+          if (!exists) merged.push(lo)
+        })
+        return merged
+      })
+    }
+    window.addEventListener('seva_setu_outbreak_update', handleOutbreakUpdate)
+    return () => window.removeEventListener('seva_setu_outbreak_update', handleOutbreakUpdate)
+  }, [])
+
   const mapPoints = useMemo(() => buildMapPoints(triageRecords, center), [triageRecords, center])
-  const districtOutbreaks = useMemo(() => outbreaks.filter(o => o.district?.toLowerCase() === thoDistrict.toLowerCase()), [outbreaks, thoDistrict])
+  // Show outbreak flags from ALL districts (disease outbreaks need statewide visibility)
+  const districtOutbreaks = useMemo(() => outbreaks, [outbreaks])
 
   return (
     <THOLayout
       onLogout={() => { logout(); navigate('/') }}
       topbarContent={
         <div>
-          <div style={{ fontWeight: 800, fontSize: '1rem', color: g.text }}>District Map — {thoDistrict}</div>
+          <div style={{ fontWeight: 800, fontSize: '1rem', color: g.text }}>District Map: {thoDistrict}</div>
           <div style={{ fontSize: '0.7rem', color: g.muted, marginTop: 1 }}>
             {loading ? 'Syncing data...' : `${mapPoints.length} clusters · ${districtOutbreaks.length} outbreaks`}
           </div>
@@ -75,7 +143,7 @@ export default function THOMapPage() {
             { color: '#ef4444', label: 'Critical' },
             { color: '#f59e0b', label: 'Moderate' },
             { color: '#22c55e', label: 'Stable' },
-            { color: '#8b5cf6', label: 'Outbreak', dashed: true },
+            { color: '#dc2626', label: '🚩 Outbreak Flag' },
           ].map(({ color, label, dashed }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: dashed ? `2px dashed ${color}` : 'none' }} />

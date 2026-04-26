@@ -95,16 +95,17 @@ export default function ImpactPage() {
         .ip-hero p { font-size:clamp(1rem,2.5vw,1.25rem); max-width:700px; margin:0 auto; line-height:1.7; color:rgba(255,255,255,.85); }
 
         /* Stats Section — "We Do This By" */
-        .ip-stats-section { padding:5rem 5%; background:#fff; }
+        .ip-stats-section { padding:6rem 5%; background:#fff; }
         .ip-stats-header { text-align:center; margin-bottom:4rem; }
-        .ip-stats-header h2 { font-family:'Playfair Display',serif; font-size:2rem; font-weight:800; color:#1a1a1a; text-transform:uppercase; letter-spacing:.05em; margin:0 0 1rem; }
-        .ip-stats-header p { color:#666; font-size:1.05rem; max-width:700px; margin:0 auto; line-height:1.6; }
-        .ip-stats-grid { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(5,1fr); gap:2rem; }
-        .ip-stat-card { text-align:center; padding:2rem 1rem; border-radius:16px; border:1px solid #f0f0f0; background:#fafaf8; transition:all .3s; }
-        .ip-stat-card:hover { transform:translateY(-6px); box-shadow:0 16px 32px rgba(0,0,0,.06); border-color:#d1fae5; }
-        .ip-stat-icon { width:56px; height:56px; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; background:#e6f7f1; border-radius:50%; font-size:1.5rem; }
-        .ip-stat-num { font-family:'Playfair Display',serif; font-size:1.75rem; font-weight:800; color:#0d9488; }
-        .ip-stat-label { font-size:.8rem; color:#888; margin-top:.5rem; font-weight:500; }
+        .ip-stats-header h2 { font-family:'Playfair Display',serif; font-size:2.5rem; font-weight:800; color:#1a1a1a; text-transform:uppercase; letter-spacing:.05em; margin:0 0 1.25rem; }
+        .ip-stats-header p { color:#555; font-size:1.15rem; max-width:750px; margin:0 auto; line-height:1.7; }
+        .ip-stats-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(5,1fr); gap:1.75rem; }
+        .ip-stat-card { text-align:center; padding:2.5rem 1.25rem; border-radius:20px; border:1px solid #e8e8e8; background:#fafaf8; transition:all .3s; position:relative; overflow:hidden; }
+        .ip-stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,#0d9488,#10b981); border-radius:20px 20px 0 0; }
+        .ip-stat-card:hover { transform:translateY(-8px); box-shadow:0 20px 40px rgba(0,0,0,.08); border-color:#a7f3d0; }
+        .ip-stat-icon { width:72px; height:72px; margin:0 auto 1.25rem; display:flex; align-items:center; justify-content:center; background:#e6f7f1; border-radius:50%; font-size:2rem; }
+        .ip-stat-num { font-family:'Playfair Display',serif; font-size:2.75rem; font-weight:800; color:#0d9488; line-height:1.2; }
+        .ip-stat-label { font-size:1rem; color:#666; margin-top:.75rem; font-weight:600; line-height:1.4; }
 
         /* Journey Section — "Here is How We Do It" */
         .ip-journey { padding:6rem 5%; background:#fafaf8; }

@@ -120,16 +120,29 @@ export default function LandingPage() {
         .lp-problem-img img { width:100%; display:block; border-radius:24px; }
 
         /* Features */
-        .lp-features { padding:7rem 5%; background:#fafaf8; }
+        .lp-features { padding:7rem 5%; background:linear-gradient(180deg, #fafaf8 0%, #f0fdf4 50%, #fafaf8 100%); position:relative; }
+        .lp-features::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:1px; height:60px; background:linear-gradient(180deg, transparent, #10b981); }
         .lp-features-header { text-align:center; max-width:700px; margin:0 auto 4rem; }
-        .lp-features-header .chip { display:inline-block; background:#e6f7f1; color:#0d9488; padding:6px 18px; border-radius:99px; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:1.5rem; }
+        .lp-features-header .chip { display:inline-block; background:linear-gradient(135deg, #e6f7f1, #d1fae5); color:#0d9488; padding:8px 22px; border-radius:99px; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:1.5rem; border:1px solid rgba(16,185,129,.15); }
         .lp-features-header h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,2.75rem); font-weight:800; color:#1a1a1a; letter-spacing:-.02em; }
+        .lp-features-header p { color:#64748b; font-size:1rem; line-height:1.6; margin-top:1rem; }
         .lp-feat-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; }
-        .lp-feat-card { background:#fff; border-radius:24px; padding:2.5rem; border:1px solid #eee; transition:all .3s; position:relative; overflow:hidden; }
-        .lp-feat-card:hover { transform:translateY(-8px); box-shadow:0 20px 40px rgba(0,0,0,.08); border-color:#d1fae5; }
-        .lp-feat-icon { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem; font-size:1.5rem; }
-        .lp-feat-card h3 { font-size:1.25rem; font-weight:800; color:#1a1a1a; margin:0 0 .75rem; }
-        .lp-feat-card p { color:#666; font-size:.9375rem; line-height:1.6; margin:0; }
+        .lp-feat-card { background:#fff; border-radius:24px; padding:2.5rem 2rem 2rem; border:1.5px solid #e2e8f0; transition:all .4s cubic-bezier(.25,.8,.25,1); position:relative; overflow:hidden; cursor:default; }
+        .lp-feat-card::before { content:''; position:absolute; inset:-2px; border-radius:26px; background:linear-gradient(135deg, #10b981, #06b6d4, #8b5cf6, #10b981); opacity:0; transition:opacity .4s; z-index:0; }
+        .lp-feat-card::after { content:''; position:absolute; inset:1px; border-radius:23px; background:#fff; z-index:1; }
+        .lp-feat-card:hover { transform:translateY(-10px) scale(1.02); box-shadow:0 25px 50px rgba(16,185,129,.15), 0 0 0 1px rgba(16,185,129,.1); }
+        .lp-feat-card:hover::before { opacity:1; animation:lp-border-spin 3s linear infinite; }
+        @keyframes lp-border-spin { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+        .lp-feat-inner { position:relative; z-index:2; }
+        .lp-feat-step { position:absolute; top:1.5rem; right:1.5rem; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #f0fdf4, #e0f2fe); border:1.5px solid #d1fae5; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:800; color:#0d9488; z-index:2; transition:all .3s; }
+        .lp-feat-card:hover .lp-feat-step { background:linear-gradient(135deg, #10b981, #0d9488); color:#fff; border-color:#10b981; transform:scale(1.15); }
+        .lp-feat-icon { width:60px; height:60px; border-radius:18px; display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; font-size:1.6rem; transition:all .4s cubic-bezier(.25,.8,.25,1); position:relative; }
+        .lp-feat-card:hover .lp-feat-icon { transform:scale(1.12) rotate(-5deg); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+        .lp-feat-card h3 { font-size:1.2rem; font-weight:800; color:#0f172a; margin:0 0 .65rem; transition:color .3s; }
+        .lp-feat-card:hover h3 { color:#0d9488; }
+        .lp-feat-card p { color:#64748b; font-size:.9rem; line-height:1.65; margin:0; }
+        .lp-feat-tag { display:inline-block; margin-top:1rem; padding:4px 12px; border-radius:99px; font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; opacity:0; transform:translateY(8px); transition:all .3s .1s; }
+        .lp-feat-card:hover .lp-feat-tag { opacity:1; transform:translateY(0); }
 
         /* Tech Strip */
         .lp-tech { padding:3rem 5%; background:#f3f4f6; text-align:center; }
@@ -160,25 +173,25 @@ export default function LandingPage() {
 
       {/* ─── NAV ─── */}
       <nav style={{
-        position:'fixed', top:0, left:0, right:0, zIndex:100,
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         background: isScrolled ? 'rgba(8,12,22,.95)' : 'transparent',
         backdropFilter: isScrolled ? 'blur(16px)' : 'none',
         boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,.08)' : 'none',
-        transition:'all .3s',
+        transition: 'all .3s',
       }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.25rem 5%', maxWidth:1400, margin:'0 auto', width:'100%' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'.75rem', fontWeight:800, fontSize:'1.5rem', color:'#fff', letterSpacing:'-.02em' }}>
-            <img src={logoSrc} alt="Seva Setu" width={40} height={40} style={{ borderRadius:10, objectFit:'cover' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 5%', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', fontWeight: 800, fontSize: '1.5rem', color: '#fff', letterSpacing: '-.02em' }}>
+            <img src={logoSrc} alt="Seva Setu" width={40} height={40} style={{ borderRadius: 10, objectFit: 'cover' }} />
             Seva Setu
           </div>
-          <div style={{ display:'flex', gap:'2.5rem', fontSize:'.9rem', fontWeight:500, color:'rgba(255,255,255,.8)' }} className="hide-m">
-            <a href="#about" style={{ color:'inherit', textDecoration:'none' }}>About</a>
-            <a href="#problem" style={{ color:'inherit', textDecoration:'none' }}>Problem</a>
-            <a href="#features" style={{ color:'inherit', textDecoration:'none' }}>Features</a>
-            <a onClick={() => navigate('/our-work')} style={{ color:'inherit', textDecoration:'none', cursor:'pointer' }}>Our Work</a>
-            <a onClick={() => navigate('/impact')} style={{ color:'inherit', textDecoration:'none', cursor:'pointer' }}>Impact</a>
+          <div style={{ display: 'flex', gap: '2.5rem', fontSize: '.9rem', fontWeight: 500, color: 'rgba(255,255,255,.8)' }} className="hide-m">
+            <a href="#about" style={{ color: 'inherit', textDecoration: 'none' }}>About</a>
+            <a href="#problem" style={{ color: 'inherit', textDecoration: 'none' }}>Problem</a>
+            <a href="#features" style={{ color: 'inherit', textDecoration: 'none' }}>Features</a>
+            <a onClick={() => navigate('/our-work')} style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}>Our Work</a>
+            <a onClick={() => navigate('/impact')} style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}>Impact</a>
           </div>
-          <button onClick={openLogin} className="lp-btn-primary" style={{ padding:'.65rem 1.5rem', fontSize:'.9rem' }}>
+          <button onClick={openLogin} className="lp-btn-primary" style={{ padding: '.65rem 1.5rem', fontSize: '.9rem' }}>
             Get Started →
           </button>
         </div>
@@ -193,7 +206,7 @@ export default function LandingPage() {
             Delivering <span className="accent">Seva</span><br />to the Last Mile
           </h1>
           <p className="sub lp-anim lp-d2">
-            AI-powered health triage for ASHA workers and Health Officers — bridging rural India's healthcare gap with intelligent digital infrastructure.
+            AI-powered health triage for ASHA workers and Health Officers, bridging rural India's healthcare gap with intelligent digital infrastructure.
           </p>
 
         </div>
@@ -203,12 +216,12 @@ export default function LandingPage() {
       <section className="lp-stats">
         <div className="lp-stats-grid">
           {[
-            { num: 500, suffix:'+', label:'Emergency Cases Flagged' },
-            { num: 31, suffix:'', label:'Karnataka Districts Covered' },
-            { num: 3, suffix:'', label:'Languages Supported' },
-            { num: 2, suffix:'', label:'AI Models for Consensus' },
-          ].map((s,i) => (
-            <div key={i} className={`lp-anim lp-d${i+1}`}>
+            { num: 500, suffix: '+', label: 'Emergency Cases Flagged' },
+            { num: 31, suffix: '', label: 'Karnataka Districts Covered' },
+            { num: 3, suffix: '', label: 'Languages Supported' },
+            { num: 2, suffix: '', label: 'AI Models for Consensus' },
+          ].map((s, i) => (
+            <div key={i} className={`lp-anim lp-d${i + 1}`}>
               <div className="lp-stat-num"><CountUp end={s.num} suffix={s.suffix} /></div>
               <div className="lp-stat-label">{s.label}</div>
             </div>
@@ -237,24 +250,24 @@ export default function LandingPage() {
 
       {/* ─── PROBLEM ─── */}
       <section id="problem" className="lp-problem">
-        <div style={{ position:'absolute', top:'10%', right:'-10%', width:'50%', height:'80%', background:'radial-gradient(circle, rgba(16,185,129,.08) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '10%', right: '-10%', width: '50%', height: '80%', background: 'radial-gradient(circle, rgba(16,185,129,.08) 0%, transparent 70%)' }} />
         <div className="lp-problem-grid">
           <div className="lp-anim">
             <h2>The Problem We Solve</h2>
             <p>
-              <strong style={{color:'#fff'}}>ASHA workers like Bharti spend 50+ hours every month</strong> recording services on 10 registers and 5 mobile apps. Across India, they collectively spend 50M hours monthly feeding data into 50 portals.
+              <strong style={{ color: '#fff' }}>ASHA workers like Bharti spend 50+ hours every month</strong> recording services on 10 registers and 5 mobile apps. Across India, they collectively spend 50M hours monthly feeding data into 50 portals.
             </p>
             <p>
-              Misdiagnosis at the village level leads to delayed referrals. A child with pneumonia might be triaged as "common cold" — losing critical golden hours. <strong style={{color:'#f87171'}}>Every minute of delay can cost a life.</strong>
+              Misdiagnosis at the village level leads to delayed referrals. A child with pneumonia might be triaged as "common cold" — losing critical golden hours. <strong style={{ color: '#f87171' }}>Every minute of delay can cost a life.</strong>
             </p>
-            <div style={{ display:'flex', gap:'1.5rem', flexWrap:'wrap', marginTop:'1rem' }}>
-              <div style={{ background:'rgba(239,68,68,.12)', border:'1px solid rgba(239,68,68,.25)', borderRadius:16, padding:'1.25rem 1.5rem', flex:1, minWidth:140 }}>
-                <div style={{ fontSize:'1.75rem', fontWeight:800, color:'#f87171' }}>50M</div>
-                <div style={{ fontSize:'.8rem', color:'rgba(255,255,255,.6)', marginTop:4 }}>hours wasted monthly on paper registers</div>
+            <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+              <div style={{ background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.25)', borderRadius: 16, padding: '1.25rem 1.5rem', flex: 1, minWidth: 140 }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f87171' }}>50M</div>
+                <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.6)', marginTop: 4 }}>hours wasted monthly on paper registers</div>
               </div>
-              <div style={{ background:'rgba(251,191,36,.12)', border:'1px solid rgba(251,191,36,.25)', borderRadius:16, padding:'1.25rem 1.5rem', flex:1, minWidth:140 }}>
-                <div style={{ fontSize:'1.75rem', fontWeight:800, color:'#fbbf24' }}>10+</div>
-                <div style={{ fontSize:'.8rem', color:'rgba(255,255,255,.6)', marginTop:4 }}>registers per ASHA worker</div>
+              <div style={{ background: 'rgba(251,191,36,.12)', border: '1px solid rgba(251,191,36,.25)', borderRadius: 16, padding: '1.25rem 1.5rem', flex: 1, minWidth: 140 }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fbbf24' }}>10+</div>
+                <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.6)', marginTop: 4 }}>registers per ASHA worker</div>
               </div>
             </div>
           </div>
@@ -269,20 +282,25 @@ export default function LandingPage() {
         <div className="lp-features-header">
           <div className="chip lp-anim">✦ Our Approach</div>
           <h2 className="lp-anim lp-d1">How Seva Setu Works</h2>
+          <p className="lp-anim lp-d2">Six intelligent modules working together to save lives in rural India</p>
         </div>
         <div className="lp-feat-grid">
           {[
-            { icon:'🤖', bg:'#e0f2fe', title:'Dual-AI Triage', desc:'Gemini and HuggingFace run in parallel for consensus-based severity assessment. If both agree it\'s an emergency, you can trust the result.' },
-            { icon:'🗣️', bg:'#fef3c7', title:'Voice-to-Text', desc:'ASHA workers speak symptoms in Kannada, Hindi, or English. Our AI transcribes, translates, and triages — no typing needed.' },
-            { icon:'🗺️', bg:'#d1fae5', title:'Disease Heatmap', desc:'Real-time district-level visualization with severity-coded circles. Auto-detects outbreak clusters when cases spike in a tehsil.' },
-            { icon:'🩺', bg:'#ede9fe', title:'Sickle Cell Screening', desc:'Automatic risk flagging for high-prevalence districts like Yadgir, Raichur, and Bellary in northern Karnataka.' },
-            { icon:'🤟', bg:'#fce7f3', title:'Sign Language Mode', desc:'Indian Sign Language (ISL) interface for deaf and hard-of-hearing patients — true healthcare accessibility.' },
-            { icon:'⚡', bg:'#fee2e2', title:'Real-Time Sync', desc:'ASHA worker adds a patient → THO officer sees it instantly on their dashboard, sorted by emergency priority.' },
-          ].map((f,i) => (
-            <div key={i} className={`lp-feat-card lp-anim lp-d${(i%3)+1}`}>
-              <div className="lp-feat-icon" style={{ background:f.bg }}>{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
+            { icon: '🤖', bg: '#e0f2fe', title: 'Dual-AI Triage', desc: 'Gemini and HuggingFace run in parallel for consensus-based severity assessment. If both agree it\'s an emergency, you can trust the result.', tag: 'Core Engine', tagBg: '#dbeafe', tagColor: '#1d4ed8' },
+            { icon: '🗣️', bg: '#fef3c7', title: 'Voice-to-Text', desc: 'ASHA workers speak symptoms in Kannada, Hindi, or English. Our AI transcribes, translates, and triages — no typing needed.', tag: 'Multilingual', tagBg: '#fef3c7', tagColor: '#b45309' },
+            { icon: '🗺️', bg: '#d1fae5', title: 'Disease Heatmap', desc: 'Real-time district-level visualization with severity-coded circles. Auto-detects outbreak clusters when cases spike in a tehsil.', tag: 'Live Analytics', tagBg: '#d1fae5', tagColor: '#047857' },
+            { icon: '🩺', bg: '#ede9fe', title: 'Sickle Cell Screening', desc: 'Automatic risk flagging for high-prevalence districts like Yadgir, Raichur, and Bellary in northern Karnataka.', tag: 'Auto-detect', tagBg: '#ede9fe', tagColor: '#6d28d9' },
+            { icon: '🤟', bg: '#fce7f3', title: 'Sign Language Mode', desc: 'Indian Sign Language (ISL) interface for deaf and hard-of-hearing patients — true healthcare accessibility.', tag: 'Accessible', tagBg: '#fce7f3', tagColor: '#be185d' },
+            { icon: '⚡', bg: '#fee2e2', title: 'Real-Time Sync', desc: 'ASHA worker adds a patient → THO officer sees it instantly on their dashboard, sorted by emergency priority.', tag: 'Instant', tagBg: '#fee2e2', tagColor: '#dc2626' },
+          ].map((f, i) => (
+            <div key={i} className={`lp-feat-card lp-anim lp-d${(i % 3) + 1}`}>
+              <div className="lp-feat-inner">
+                <div className="lp-feat-step">0{i + 1}</div>
+                <div className="lp-feat-icon" style={{ background: f.bg }}>{f.icon}</div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+                <span className="lp-feat-tag" style={{ background: f.tagBg, color: f.tagColor }}>{f.tag}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -290,10 +308,20 @@ export default function LandingPage() {
 
       {/* ─── TECH STRIP ─── */}
       <section className="lp-tech">
-        <div className="lp-tech-title">Built With</div>
+        <div className="lp-tech-title">Google Technologies Used</div>
         <div className="lp-tech-logos">
-          {['Google Gemini', 'HuggingFace', 'React', 'FastAPI', 'Google Maps', 'Web Speech API'].map(t => (
-            <span key={t}>{t}</span>
+          {[
+            { name: 'Google Gemini' },
+            { name: 'Google Maps' },
+            { name: 'Web Speech API' },
+            { name: 'Google MediaPipe' }
+          ].map(t => (
+            <span key={t.name} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#1a73e8', fontWeight: 800, fontSize: '1.1rem' }}>
+              {t.name}
+              <span style={{ fontSize: '0.6rem', background: '#e8f0fe', color: '#1a73e8', padding: '3px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 800, border: '1px solid #d2e3fc' }}>
+                Google Tech
+              </span>
+            </span>
           ))}
         </div>
       </section>
@@ -304,19 +332,19 @@ export default function LandingPage() {
       {/* ─── FOOTER ─── */}
       <footer className="lp-footer">
         <div className="lp-footer-inner">
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'2rem', marginBottom:'2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
             <div>
-              <div style={{ display:'flex', alignItems:'center', gap:'.75rem', fontWeight:800, fontSize:'1.5rem', color:'#fff', marginBottom:'.75rem' }}>
-                <img src={logoSrc} alt="" width={36} height={36} style={{ borderRadius:9 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', fontWeight: 800, fontSize: '1.5rem', color: '#fff', marginBottom: '.75rem' }}>
+                <img src={logoSrc} alt="" width={36} height={36} style={{ borderRadius: 9 }} />
                 Seva Setu
               </div>
-              <p style={{ maxWidth:350, fontSize:'.875rem', lineHeight:1.6, color:'rgba(255,255,255,.5)' }}>
+              <p style={{ maxWidth: 350, fontSize: '.875rem', lineHeight: 1.6, color: 'rgba(255,255,255,.5)' }}>
                 Bridging the healthcare gap in rural India with AI-powered triage intelligence.
               </p>
             </div>
             <button onClick={openLogin} className="lp-btn-primary">Get Started →</button>
           </div>
-          <div style={{ borderTop:'1px solid rgba(255,255,255,.08)', paddingTop:'1.5rem', display:'flex', justifyContent:'space-between', fontSize:'.8rem', color:'rgba(255,255,255,.35)', flexWrap:'wrap', gap:'1rem' }}>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', fontSize: '.8rem', color: 'rgba(255,255,255,.35)', flexWrap: 'wrap', gap: '1rem' }}>
             <div>© 2026 Seva Setu — Built at Scaler Hackathon</div>
             <div>Designed for Rural Health. Powered by Dual-AI.</div>
           </div>

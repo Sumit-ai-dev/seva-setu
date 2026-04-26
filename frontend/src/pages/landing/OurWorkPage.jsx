@@ -9,28 +9,28 @@ import tbImg from '../../images/landing/tb.png'
 
 const PROGRAMS = [
   {
-    id: 'maternal',
-    title: 'Maternal & Reproductive Health',
+    id: 'triage',
+    title: 'Dual-AI Triage System',
     img: matImg,
-    desc: 'Despite country-wide reductions in maternal mortality, rural populations have been historically missed by the health system. Labor intensive paper-based reporting systems are a barrier to a fully functioning continuum of care. Our approach empowers community health workers (CHWs) with digital tools tailored to last-mile settings. Through Seva Setu’s digital application, CHWs leverage digital tools and AI to prioritize high-risk beneficiaries and access clinical decision-making support.'
+    desc: 'Our flagship feature uses Gemini 1.5 Flash and HuggingFace NLP models to process ASHA worker voice inputs and text symptoms in parallel. By achieving a consensus between two distinct AI architectures, we ensure a highly reliable severity score that prioritizes emergency patients instantly, drastically reducing misdiagnoses at the village level.'
   },
   {
-    id: 'malnutrition',
-    title: 'Child Malnutrition',
+    id: 'voice',
+    title: 'Multilingual Voice-to-Text',
     img: malImg,
-    desc: 'Nearly one third of all children under the age of five in rural India experience stunting or impaired growth. Seva Setu’s High Risk Child Tracking program integrates transformative digital health tools with the community health system to identify and link malnourished children with treatment. We facilitate a closed referral loop involving quality data collection, automated flagging, and field verification through digital applications for ASHA workers.'
+    desc: 'Rural healthcare workers often struggle with typing complex medical data into tablets. Our Voice-to-Text module allows ASHA workers to dictate symptoms in regional languages like Hindi and Kannada, automatically transcribing and parsing the data into actionable medical records—saving up to 50 million hours monthly across the health system.'
   },
   {
-    id: 'immunization',
-    title: 'Immunization & Zero Dose',
+    id: 'heatmap',
+    title: 'Live Disease Heatmap',
     img: immImg,
-    desc: '“Zero-dose children” refers to children who have not received key childhood vaccinations. Seva Setu’s strategy to reach zero-dose and underimmunized children leverages our Community Health Integrated Platform to identify them through digital health surveys while working with ASHA workers to verify vaccination status in remote villages.'
+    desc: 'Seva Setu provides real-time geographic insights for Taluka Health Officers. As ASHA workers log cases from the field, our live mapping system visualizes disease outbreaks across districts, allowing public health officials to allocate resources efficiently and contain localized epidemics before they spread.'
   },
   {
-    id: 'tb',
-    title: 'Tuberculosis',
+    id: 'isl',
+    title: 'Sign Language Accessibility',
     img: tbImg,
-    desc: 'In India, two people die from Tuberculosis (TB) every three minutes. As a technical partner, Seva Setu supports active case finding (ACF) surveillance. Our AI-driven module has been used by community health workers to digitally track symptoms. The platform allows health officers to understand baseline health status, identify high-risk communities, and implement quality-control linked ACF.'
+    desc: 'True healthcare accessibility must include everyone. Our platform integrates Google MediaPipe to provide real-time Indian Sign Language (ISL) interpretation, ensuring that deaf and hard-of-hearing patients can communicate their symptoms directly and accurately to healthcare providers without barriers.'
   }
 ]
 
@@ -159,7 +159,7 @@ export default function OurWorkPage() {
 
       {/* Programs */}
       <section className="ow-programs">
-        <h2 className="ow-anim">Our Programs</h2>
+        <h2 className="ow-anim">Our Technologies</h2>
         <div className="ow-tabs ow-anim">
           {PROGRAMS.map(p => (
             <div key={p.id} onClick={() => setActiveTab(p)} className={`ow-tab ${activeTab.id === p.id ? 'active' : ''}`}>

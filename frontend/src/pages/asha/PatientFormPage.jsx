@@ -8,6 +8,9 @@ import SignLanguageModal from '../../components/asha/SignLanguageModal.jsx'
 import AIMedicalAdviceCard from '../../components/asha/AIMedicalAdviceCard.jsx'
 import { apiFetch } from '../../lib/api'
 import { pushTriageRecord } from '../../lib/triageStore'
+import { detectContagiousDisease } from '../../lib/outbreakDetector'
+import { pushOutbreak } from '../../lib/outbreakStore'
+import { DISTRICT_CENTERS } from '../tho/THOShared'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
@@ -114,6 +117,7 @@ export default function PatientFormPage() {
   const [islModalOpen, setIslModalOpen] = useState(false)
   const [capturingLoc, setCapturingLoc] = useState(false)
   const [locSuccess, setLocSuccess] = useState(false)
+  const [outbreakAlert, setOutbreakAlert] = useState(null) // { disease, district }
 
   function captureLocation() {
     setCapturingLoc(true)
@@ -391,6 +395,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         setTriageResult(triaged)
         setShowResult(true)
         fetchPrecautions(triaged, form.district)
+        checkAndFlagOutbreak(form.symptomText, patientObj)
 
         pendingRef.current = { patientObj, triaged }
         setDuplicateMatches(matches)
@@ -405,6 +410,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     setTriageResult(triaged)
     setShowResult(true)
     fetchPrecautions(triaged, form.district)
+    checkAndFlagOutbreak(form.symptomText, patientObj)
 
     let pid = resolvedPatientId
     if (!pid) {
@@ -439,6 +445,51 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     }
   }
 
+  // ─── Outbreak detection after Analyse ────────────────────────────────────────
+  async function checkAndFlagOutbreak(symptomText, patientObj) {
+    const detection = detectContagiousDisease(symptomText)
+    if (!detection.detected) return
+
+    // Use patient GPS if captured, otherwise fall back to district center coordinates
+    let lat = patientObj.latitude || null
+    let lng = patientObj.longitude || null
+    if (!lat || !lng) {
+      const center = DISTRICT_CENTERS[patientObj.district]
+      if (center) {
+        lat = center[0]
+        lng = center[1]
+      }
+    }
+
+    const outbreakData = {
+      disease: detection.disease,
+      district: patientObj.district,
+      latitude: lat,
+      longitude: lng,
+      state: 'Karnataka',
+    }
+
+    // Show alert banner to ASHA worker
+    console.log('🚩 OUTBREAK FLAGGED:', outbreakData)
+    setOutbreakAlert({ disease: detection.disease, district: patientObj.district })
+    setTimeout(() => setOutbreakAlert(null), 8000) // Auto-dismiss after 8s
+
+    // Push to localStorage immediately for instant THO sync
+    pushOutbreak(outbreakData)
+
+    // Also push to backend (fire-and-forget, don't block UI)
+    try {
+      const token = localStorage.getItem('access_token')
+      await apiFetch('/outbreaks/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(outbreakData),
+      })
+    } catch (err) {
+      console.error('Outbreak flag API failed (localStorage fallback active):', err)
+    }
+  }
+
   function handleGoToChat() {
     navigate('/chat')
   }
@@ -465,6 +516,42 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           onClose={() => setDuplicateMatches(null)}
         />
       )}
+
+      {/* ─── Outbreak Alert Banner ─── */}
+      {outbreakAlert && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+          background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+          color: '#fff',
+          padding: '1rem 1.5rem',
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          boxShadow: '0 4px 24px rgba(220,38,38,0.4)',
+          animation: 'outbreakSlideIn 0.4s ease',
+          fontFamily: "'Inter', sans-serif",
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>🚩</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>
+              ⚠️ {outbreakAlert.disease} Outbreak Flag Raised
+            </div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.9, marginTop: 2 }}>
+              District: {outbreakAlert.district} — THO dashboard notified in real-time
+            </div>
+          </div>
+          <button
+            onClick={() => setOutbreakAlert(null)}
+            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '0.35rem 0.75rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+      <style>{`
+        @keyframes outbreakSlideIn {
+          from { transform: translateY(-100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
 
       <main style={{ 
         flex: 1, 
