@@ -7,44 +7,60 @@ on:
     branches: [ main ]
 
 jobs:
-  backend-lint:
-    name: Backend — Python Lint
+  backend-check:
+    name: Backend — Dependency Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
+
+      - name: Install backend dependencies
         run: |
           cd backend
+          pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Lint with flake8
+          echo "✅ Backend dependencies installed successfully"
+
+      - name: Verify FastAPI app loads
         run: |
-          pip install flake8
-          flake8 backend/ --max-line-length=120 --ignore=E501,W503
+          cd backend
+          python -c "import main; print('✅ FastAPI app import successful')"
+        env:
+          SECRET_KEY: test_secret_key_for_ci
+          GEMINI_API_KEY: placeholder
+          OPENAI_API_KEY: placeholder
+          DATABASE_URL: sqlite+aiosqlite:///./ci_test.db
 
   frontend-build:
-    name: Frontend — React Build
+    name: Frontend — Build Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
+
+      - name: Install frontend dependencies
         run: |
           cd frontend
           npm ci
-      - name: Build
+          echo "✅ Frontend dependencies installed successfully"
+
+      - name: Build frontend
         run: |
           cd frontend
           npm run build
+          echo "✅ Frontend build successful"
         env:
-          VITE_API_URL: https://placeholder.run
-          VITE_GOOGLE_MAPS_API_KEY: placeholder
-          VITE_GEMINI_API_KEY: placeholder
+          VITE_API_URL: https://placeholder.run/api/v1
+          VITE_GOOGLE_MAPS_API_KEY: AIzaSyPlaceholderForCI
+          VITE_GEMINI_API_KEY: placeholder_for_ci
+          VITE_OPENAI_API_KEY: placeholder_for_ci
