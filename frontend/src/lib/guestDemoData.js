@@ -330,16 +330,16 @@ export const GUEST_REVIEWS = [
     userName: 'Kalyani Dash',
     role: 'asha',
     designation: 'ASHA Worker',
-    location: 'Village Alpha, Odisha',
+    location: 'Yelahanka, Bangalore',
     overall: 5,
-    comment: "Nexus Health has made my daily home visits so much more organized. The offline mode is a lifesaver in our village where network is patchy.",
+    comment: "Seva Setu has made my daily home visits so much more organized. The offline mode is a lifesaver in our village where network is patchy.",
   },
   {
     id: 'guest-rev-2',
     userName: 'Dr. Ramesh Pradhan',
     role: 'tho',
     designation: 'Block Medical Officer',
-    location: 'Bhubaneswar',
+    location: 'Bangalore, Karnataka',
     overall: 5,
     comment: "The real-time tracking of disease outbreaks in my block allows us to deploy resources much faster than before. Truly a game changer for public health.",
   },
@@ -348,8 +348,9 @@ export const GUEST_REVIEWS = [
     userName: 'Meena Kumari',
     role: 'asha',
     designation: 'ASHA Worker',
-    location: 'Village Beta, Odisha',
+    location: 'Kengeri, Bangalore',
     overall: 4,
     comment: "The voice triage feature helps me record symptoms quickly even when I am busy with patients. It makes documentation so much easier!",
   }
 ]
+

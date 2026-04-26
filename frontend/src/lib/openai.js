@@ -1,3 +1,4 @@
+
 // Dual-provider AI library: Gemini (primary) → OpenAI (fallback)
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import OpenAI from 'openai'
@@ -39,10 +40,17 @@ Analyze the symptoms and ALWAYS respond with ONLY valid JSON in this exact forma
   "brief": "One sentence clinical summary for the ASHA worker"
 }
 
-Severity rules:
-- red: Emergency — high fever >103°F, difficulty breathing, unconsciousness, sickle cell risk, severe dehydration
-- yellow: Moderate — needs medical attention within 24 hours
-- green: Mild — home care with monitoring
+Severity rules (be conservative — only escalate when clearly needed):
+- red (Emergency): fever >103°F/39.4°C WITH danger signs (convulsions, unconsciousness, inability to drink, stiff neck), difficulty breathing, chest pain, severe dehydration (sunken eyes, not passing urine), sickle cell risk with fever+joint pain, postpartum haemorrhage, stroke signs
+- yellow (Moderate): fever without danger signs, moderate pain, vomiting without dehydration, needs PHC visit within 24-48h
+- green (Mild): headache, mild cough, mild fever <100°F, runny nose, minor rash, routine ANC/PNC visits — manage at home
+
+Examples:
+- "headache" → yellow (could be many causes, needs assessment)
+- "high fever" alone → yellow unless danger signs present
+- "fever with convulsions" → red
+- "cough for 2 days" → green
+- "chest pain difficulty breathing" → red
 
 Respond ONLY with the JSON object, no other text.`
 }

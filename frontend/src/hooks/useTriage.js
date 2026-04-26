@@ -14,15 +14,11 @@ export function useTriage() {
       return null
     }
 
-    // Reject gibberish: must have at least 3 real words (4+ chars each)
-    const words = symptomText.trim().split(/\s+/)
-    const realWords = words.filter(w => /^[a-zA-Z]{3,}$/.test(w))
-    if (symptomText.trim().length < 10 || realWords.length < 2) {
-      setError('Please describe the symptoms clearly (e.g. "fever for 3 days, joint pain").')
+    // Basic validation: just ensure it's not completely empty or too short
+    if (symptomText.trim().length < 3) {
+      setError('Please describe the symptom clearly.')
       return null
     }
-
-    // Reject if too many consecutive consonants — likely keyboard mashing
     if (/[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{5,}/.test(symptomText)) {
       setError('Symptoms description does not look valid. Please type real symptoms.')
       return null
